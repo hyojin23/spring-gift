@@ -36,11 +36,6 @@ public class CategoryController {
             @Valid @RequestBody CategoryRequest request
     ) {
         Category category = categoryService.findCategory(id);
-
-        if (category == null) {
-            return ResponseEntity.notFound().build();
-        }
-
         return ResponseEntity.ok(categoryService.updateCategory(category, request));
     }
 

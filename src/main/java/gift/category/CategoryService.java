@@ -40,6 +40,6 @@ public class CategoryService {
     }
 
     public Category findCategory(Long id) {
-        return categoryRepository.findById(id).orElse(null);
+        return categoryRepository.findById(id).orElseThrow(CategoryNotFoundException::new);
     }
 }

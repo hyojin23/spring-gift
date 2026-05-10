@@ -5,8 +5,8 @@
 ### 1. Category
 
 #### 구조 개선
-- [ ] CategoryController의 비즈니스 로직을 CategoryService로 분리
+- [x] CategoryController의 비즈니스 로직을 CategoryService로 분리
 - [ ] 조회/검증 책임을 Service 계층으로 이동
 - [ ] CategoryResponse 변환 책임을 Service 또는 정적 팩토리로 일관되게 정리
 - [ ] 카테고리 수정/삭제 시 존재 여부 확인 로직을 Service로 이동
-- [ ] 생성/수정/삭제 메서드에 트랜잭션 경계 설정
+- [x] 생성/수정/삭제 메서드에 트랜잭션 경계 설정

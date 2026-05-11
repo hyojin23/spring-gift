@@ -74,9 +74,9 @@ public class WishController {
             return ResponseEntity.ok(WishResponse.from(existing));
         }
 
-        var saved = wishRepository.save(new Wish(member.getId(), product));
-        return ResponseEntity.created(URI.create("/api/wishes/" + saved.getId()))
-            .body(WishResponse.from(saved));
+        WishResponse wishResponse = wishService.addWish(member.getId(), product);
+        return ResponseEntity.created(URI.create("/api/wishes/" + wishResponse.id()))
+            .body(wishResponse);
     }
 
     @DeleteMapping("/{id}")

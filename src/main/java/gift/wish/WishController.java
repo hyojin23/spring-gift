@@ -21,8 +21,6 @@ import java.net.URI;
 @RequestMapping("/api/wishes")
 public class WishController {
     private final WishService wishService;
-    private final WishRepository wishRepository;
-    private final ProductRepository productRepository;
     private final AuthenticationResolver authenticationResolver;
 
     public WishController(
@@ -32,8 +30,6 @@ public class WishController {
         AuthenticationResolver authenticationResolver
     ) {
         this.wishService = wishService;
-        this.wishRepository = wishRepository;
-        this.productRepository = productRepository;
         this.authenticationResolver = authenticationResolver;
     }
 

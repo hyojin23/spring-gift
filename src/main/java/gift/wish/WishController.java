@@ -87,16 +87,16 @@ public class WishController {
             return ResponseEntity.status(401).build();
         }
 
-        var wish = wishRepository.findById(id).orElse(null);
-        if (wish == null) {
+        var result = wishService.removeWish(member.getId(), id);
+
+        if (result.isNotFound()) {
             return ResponseEntity.notFound().build();
         }
 
-        if (!wish.getMemberId().equals(member.getId())) {
+        if (result.isForbidden()) {
             return ResponseEntity.status(403).build();
         }
 
-        wishRepository.delete(wish);
         return ResponseEntity.noContent().build();
     }
 }

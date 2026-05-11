@@ -40,4 +40,19 @@ public class WishService {
         return WishAddResult.created(saved);
     }
 
+    public WishRemoveResult removeWish(Long memberId, Long wishId) {
+        var wish = wishRepository.findById(wishId).orElse(null);
+
+        if (wish == null) {
+            return WishRemoveResult.notFound();
+        }
+
+        if (!wish.getMemberId().equals(memberId)) {
+            return WishRemoveResult.forbidden();
+        }
+
+        wishRepository.delete(wish);
+        return WishRemoveResult.removed();
+    }
+
 }

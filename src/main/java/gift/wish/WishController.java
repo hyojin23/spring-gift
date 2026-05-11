@@ -20,15 +20,18 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/wishes")
 public class WishController {
+    private final WishService wishService;
     private final WishRepository wishRepository;
     private final ProductRepository productRepository;
     private final AuthenticationResolver authenticationResolver;
 
     public WishController(
+        WishService wishService,
         WishRepository wishRepository,
         ProductRepository productRepository,
         AuthenticationResolver authenticationResolver
     ) {
+        this.wishService = wishService;
         this.wishRepository = wishRepository;
         this.productRepository = productRepository;
         this.authenticationResolver = authenticationResolver;
@@ -44,7 +47,7 @@ public class WishController {
         if (member == null) {
             return ResponseEntity.status(401).build();
         }
-        var wishes = wishRepository.findByMemberId(member.getId(), pageable).map(WishResponse::from);
+        var wishes = wishService.getWishes(member.getId(), pageable);
         return ResponseEntity.ok(wishes);
     }
 

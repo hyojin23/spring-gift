@@ -62,21 +62,18 @@ public class WishController {
             return ResponseEntity.status(401).build();
         }
 
-        // check product
-        var product = productRepository.findById(request.productId()).orElse(null);
-        if (product == null) {
+        var result = wishService.addWish(member.getId(), request.productId());
+
+        if (result == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // check duplicate
-        var existing = wishRepository.findByMemberIdAndProductId(member.getId(), product.getId()).orElse(null);
-        if (existing != null) {
-            return ResponseEntity.ok(WishResponse.from(existing));
+        if (!result.created()) {
+            return ResponseEntity.ok(result.response());
         }
 
-        WishResponse wishResponse = wishService.addWish(member.getId(), product);
-        return ResponseEntity.created(URI.create("/api/wishes/" + wishResponse.id()))
-            .body(wishResponse);
+        return ResponseEntity.created(URI.create("/api/wishes/" + result.response().id()))
+            .body(result.response());
     }
 
     @DeleteMapping("/{id}")

@@ -1,7 +1,8 @@
 package gift.wish;
 
 import gift.auth.AuthenticationResolver;
-import gift.product.ProductRepository;
+import gift.member.Member;
+import gift.wish.exception.AuthenticationException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,8 +26,6 @@ public class WishController {
 
     public WishController(
         WishService wishService,
-        WishRepository wishRepository,
-        ProductRepository productRepository,
         AuthenticationResolver authenticationResolver
     ) {
         this.wishService = wishService;
@@ -35,34 +34,22 @@ public class WishController {
 
     @GetMapping
     public ResponseEntity<Page<WishResponse>> getWishes(
-        @RequestHeader("Authorization") String authorization,
+        @RequestHeader(value = "Authorization", required = false) String authorization,
         Pageable pageable
     ) {
-        // check auth
-        var member = authenticationResolver.extractMember(authorization);
-        if (member == null) {
-            return ResponseEntity.status(401).build();
-        }
+        var member = extractMember(authorization);
         var wishes = wishService.getWishes(member.getId(), pageable);
         return ResponseEntity.ok(wishes);
     }
 
     @PostMapping
     public ResponseEntity<WishResponse> addWish(
-        @RequestHeader("Authorization") String authorization,
+        @RequestHeader(value = "Authorization", required = false) String authorization,
         @Valid @RequestBody WishRequest request
     ) {
-        // check auth
-        var member = authenticationResolver.extractMember(authorization);
-        if (member == null) {
-            return ResponseEntity.status(401).build();
-        }
+        var member = extractMember(authorization);
 
         var result = wishService.addWish(member.getId(), request.productId());
-
-        if (result == null) {
-            return ResponseEntity.notFound().build();
-        }
 
         if (!result.created()) {
             return ResponseEntity.ok(result.response());
@@ -74,25 +61,21 @@ public class WishController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removeWish(
-        @RequestHeader("Authorization") String authorization,
+        @RequestHeader(value = "Authorization", required = false) String authorization,
         @PathVariable Long id
     ) {
-        // check auth
-        var member = authenticationResolver.extractMember(authorization);
-        if (member == null) {
-            return ResponseEntity.status(401).build();
-        }
+        var member = extractMember(authorization);
 
-        var result = wishService.removeWish(member.getId(), id);
-
-        if (result.isNotFound()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (result.isForbidden()) {
-            return ResponseEntity.status(403).build();
-        }
+        wishService.removeWish(member.getId(), id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private Member extractMember(String authorization) {
+        var member = authenticationResolver.extractMember(authorization);
+        if (member == null) {
+            throw new AuthenticationException();
+        }
+        return member;
     }
 }

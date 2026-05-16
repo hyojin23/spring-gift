@@ -2,6 +2,8 @@ package gift.wish;
 
 import gift.product.Product;
 import gift.product.ProductRepository;
+import gift.wish.exception.UnauthorizedWishAccessException;
+import gift.wish.exception.WishNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,8 @@ public class WishService {
 
     public WishAddResult addWish(Long memberId, Long productId) {
 
-        Product product = productRepository.findById(productId).orElse(null);
-
-        if (product == null) {
-            return null;
-        }
+        Product product = productRepository.findById(productId)
+            .orElseThrow(WishNotFoundException::new);
 
         var existing = wishRepository.findByMemberIdAndProductId(memberId, product.getId()).orElse(null);
 
@@ -40,19 +39,15 @@ public class WishService {
         return WishAddResult.created(saved);
     }
 
-    public WishRemoveResult removeWish(Long memberId, Long wishId) {
-        var wish = wishRepository.findById(wishId).orElse(null);
-
-        if (wish == null) {
-            return WishRemoveResult.notFound();
-        }
+    public void removeWish(Long memberId, Long wishId) {
+        var wish = wishRepository.findById(wishId)
+            .orElseThrow(WishNotFoundException::new);
 
         if (!wish.getMemberId().equals(memberId)) {
-            return WishRemoveResult.forbidden();
+            throw new UnauthorizedWishAccessException();
         }
 
         wishRepository.delete(wish);
-        return WishRemoveResult.removed();
     }
 
 }

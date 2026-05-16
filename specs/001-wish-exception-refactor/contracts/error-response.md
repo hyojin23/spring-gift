@@ -38,7 +38,7 @@ All error responses MUST use the following JSON structure:
 ```json
 {
   "code": "AUTH.UNAUTHORIZED",
-  "message": "Authentication credentials are missing or invalid.",
+  "message": "인증 정보가 없거나 유효하지 않습니다.",
   "timestamp": "2026-05-17T12:00:00Z"
 }
 ```
@@ -48,7 +48,7 @@ All error responses MUST use the following JSON structure:
 ```json
 {
   "code": "WISH.ACCESS_DENIED",
-  "message": "You do not have permission to access this wish item.",
+  "message": "이 위시 항목에 접근할 권한이 없습니다.",
   "timestamp": "2026-05-17T12:00:00Z"
 }
 ```
@@ -58,7 +58,7 @@ All error responses MUST use the following JSON structure:
 ```json
 {
   "code": "WISH.NOT_FOUND",
-  "message": "The requested wish item does not exist.",
+  "message": "요청한 위시 항목을 찾을 수 없습니다.",
   "timestamp": "2026-05-17T12:00:00Z"
 }
 ```
@@ -68,7 +68,7 @@ All error responses MUST use the following JSON structure:
 ```json
 {
   "code": "INTERNAL.SERVER_ERROR",
-  "message": "An unexpected error occurred.",
+  "message": "예기치 않은 오류가 발생했습니다.",
   "timestamp": "2026-05-17T12:00:00Z"
 }
 ```

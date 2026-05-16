@@ -1,6 +1,11 @@
 package gift.global;
 
 import gift.global.exception.ErrorResponse;
+import gift.option.exception.DuplicateOptionNameException;
+import gift.option.exception.OptionDeletionNotAllowedException;
+import gift.option.exception.OptionNotFoundException;
+import gift.option.exception.OptionProductNotFoundException;
+import gift.option.exception.OptionValidationException;
 import gift.wish.exception.AuthenticationException;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
@@ -45,5 +50,63 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("WISH.NOT_FOUND");
+    }
+
+    @Test
+    @DisplayName("옵션 상품 미존재 예외를 404 에러 응답으로 변환한다")
+    void handleOptionProductNotFound() {
+        ResponseEntity<ErrorResponse> response = handler.handleOptionProductNotFound(
+            new OptionProductNotFoundException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("OPTION.PRODUCT_NOT_FOUND");
+    }
+
+    @Test
+    @DisplayName("옵션 미존재 예외를 404 에러 응답으로 변환한다")
+    void handleOptionNotFound() {
+        ResponseEntity<ErrorResponse> response = handler.handleOptionNotFound(new OptionNotFoundException());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("OPTION.NOT_FOUND");
+    }
+
+    @Test
+    @DisplayName("중복 옵션명 예외를 400 에러 응답으로 변환한다")
+    void handleDuplicateOptionName() {
+        ResponseEntity<ErrorResponse> response = handler.handleDuplicateOptionName(
+            new DuplicateOptionNameException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("OPTION.DUPLICATE_NAME");
+    }
+
+    @Test
+    @DisplayName("옵션 삭제 제한 예외를 400 에러 응답으로 변환한다")
+    void handleOptionDeletionNotAllowed() {
+        ResponseEntity<ErrorResponse> response = handler.handleOptionDeletionNotAllowed(
+            new OptionDeletionNotAllowedException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("OPTION.DELETE_NOT_ALLOWED");
+    }
+
+    @Test
+    @DisplayName("옵션명 검증 예외를 400 에러 응답으로 변환한다")
+    void handleOptionValidation() {
+        ResponseEntity<ErrorResponse> response = handler.handleOptionValidation(
+            new OptionValidationException("옵션 이름은 필수입니다.")
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("OPTION.INVALID_NAME");
     }
 }

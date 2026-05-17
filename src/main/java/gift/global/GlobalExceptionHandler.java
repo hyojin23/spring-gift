@@ -2,6 +2,8 @@ package gift.global;
 
 import gift.category.CategoryNotFoundException;
 import gift.global.exception.ErrorResponse;
+import gift.member.exception.DuplicateMemberEmailException;
+import gift.member.exception.InvalidMemberCredentialsException;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
@@ -30,6 +32,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException exception) {
         return error(HttpStatus.UNAUTHORIZED, "AUTH.UNAUTHORIZED", exception.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateMemberEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateMemberEmail(DuplicateMemberEmailException exception) {
+        return error(HttpStatus.BAD_REQUEST, "MEMBER.DUPLICATE_EMAIL", exception.getMessage());
+    }
+
+    @ExceptionHandler(InvalidMemberCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidMemberCredentials(InvalidMemberCredentialsException exception) {
+        return error(HttpStatus.UNAUTHORIZED, "MEMBER.INVALID_CREDENTIALS", exception.getMessage());
     }
 
     @ExceptionHandler(UnauthorizedWishAccessException.class)

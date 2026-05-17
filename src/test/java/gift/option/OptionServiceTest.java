@@ -1,5 +1,6 @@
 package gift.option;
 
+import gift.category.Category;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
@@ -101,9 +102,13 @@ class OptionServiceTest {
     }
 
     private Product product(Long id) {
-        Product product = new Product("상품", 1000, "https://example.com/product.jpg", null);
+        Product product = new Product("상품", 1000, "https://example.com/product.jpg", category());
         ReflectionTestUtils.setField(product, "id", id);
         return product;
+    }
+
+    private Category category() {
+        return new Category("카테고리", "#FFFFFF", "https://example.com/category.jpg", "설명");
     }
 
     private Option option(Product product) {

@@ -2,6 +2,7 @@ package gift.product;
 
 import gift.category.Category;
 import gift.option.Option;
+import gift.product.exception.ProductValidationException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +35,7 @@ public class Product {
     }
 
     public Product(String name, int price, String imageUrl, Category category) {
+        validate(name, price, imageUrl, category);
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
@@ -41,10 +43,26 @@ public class Product {
     }
 
     public void update(String name, int price, String imageUrl, Category category) {
+        validate(name, price, imageUrl, category);
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
         this.category = category;
+    }
+
+    private void validate(String name, int price, String imageUrl, Category category) {
+        if (name == null || name.isBlank()) {
+            throw new ProductValidationException("상품 이름은 필수입니다.");
+        }
+        if (price <= 0) {
+            throw new ProductValidationException("상품 가격은 0보다 커야 합니다.");
+        }
+        if (imageUrl == null || imageUrl.isBlank()) {
+            throw new ProductValidationException("상품 이미지 URL은 필수입니다.");
+        }
+        if (category == null) {
+            throw new ProductValidationException("상품 카테고리는 필수입니다.");
+        }
     }
 
     public Long getId() {

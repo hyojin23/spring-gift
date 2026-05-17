@@ -1,5 +1,6 @@
 package gift.option;
 
+import gift.option.exception.OptionQuantityException;
 import gift.product.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ class OptionTest {
         Product product = product();
 
         assertThatThrownBy(() -> new Option(product, "옵션", 0))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(OptionQuantityException.class)
             .hasMessage("옵션 수량은 1 이상 99,999,999 이하이어야 합니다.");
     }
 
@@ -25,7 +26,7 @@ class OptionTest {
         Product product = product();
 
         assertThatThrownBy(() -> new Option(product, "옵션", 100_000_000))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(OptionQuantityException.class)
             .hasMessage("옵션 수량은 1 이상 99,999,999 이하이어야 합니다.");
     }
 
@@ -43,7 +44,7 @@ class OptionTest {
         Option option = new Option(product(), "옵션", 10);
 
         assertThatThrownBy(() -> option.subtractQuantity(0))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(OptionQuantityException.class)
             .hasMessage("차감 수량은 1 이상이어야 합니다.");
     }
 
@@ -53,7 +54,7 @@ class OptionTest {
         Option option = new Option(product(), "옵션", 10);
 
         assertThatThrownBy(() -> option.subtractQuantity(11))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(OptionQuantityException.class)
             .hasMessage("차감할 수량이 현재 재고보다 많습니다.");
     }
 

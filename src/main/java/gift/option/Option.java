@@ -1,5 +1,6 @@
 package gift.option;
 
+import gift.option.exception.OptionQuantityException;
 import gift.product.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,20 +44,20 @@ public class Option {
     public void subtractQuantity(int amount) {
         validateSubtractAmount(amount);
         if (amount > this.quantity) {
-            throw new IllegalArgumentException("차감할 수량이 현재 재고보다 많습니다.");
+            throw new OptionQuantityException("차감할 수량이 현재 재고보다 많습니다.");
         }
         this.quantity -= amount;
     }
 
     private void validateQuantity(int quantity) {
         if (quantity < MIN_QUANTITY || quantity > MAX_QUANTITY) {
-            throw new IllegalArgumentException("옵션 수량은 1 이상 99,999,999 이하이어야 합니다.");
+            throw new OptionQuantityException("옵션 수량은 1 이상 99,999,999 이하이어야 합니다.");
         }
     }
 
     private void validateSubtractAmount(int amount) {
         if (amount < MIN_QUANTITY) {
-            throw new IllegalArgumentException("차감 수량은 1 이상이어야 합니다.");
+            throw new OptionQuantityException("차감 수량은 1 이상이어야 합니다.");
         }
     }
 

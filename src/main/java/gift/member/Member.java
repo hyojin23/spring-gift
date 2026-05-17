@@ -1,5 +1,6 @@
 package gift.member;
 
+import gift.member.exception.MemberValidationException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,17 +30,34 @@ public class Member {
     }
 
     public Member(String email, String password) {
+        validateEmail(email);
+        validatePassword(password);
         this.email = email;
         this.password = password;
     }
 
     public Member(String email) {
+        validateEmail(email);
         this.email = email;
     }
 
     public void update(String email, String password) {
+        validateEmail(email);
+        validatePassword(password);
         this.email = email;
         this.password = password;
+    }
+
+    private void validateEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new MemberValidationException("회원 이메일은 필수입니다.");
+        }
+    }
+
+    private void validatePassword(String password) {
+        if (password == null || password.isBlank()) {
+            throw new MemberValidationException("회원 비밀번호는 필수입니다.");
+        }
     }
 
     public void updateKakaoAccessToken(String kakaoAccessToken) {

@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class OptionServiceTest {
@@ -56,10 +57,36 @@ class OptionServiceTest {
         Product product = product(1L);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(optionRepository.countByProductId(1L)).thenReturn(2L);
-        when(optionRepository.findById(999999L)).thenReturn(Optional.empty());
+        when(optionRepository.findByIdAndProductId(999999L, 1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> optionService.deleteOption(1L, 999999L))
             .isInstanceOf(OptionNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("다른 상품의 옵션을 삭제하려 하면 옵션 미존재 예외를 던진다")
+    void deleteOptionFromDifferentProduct() {
+        Product product = product(1L);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(optionRepository.countByProductId(1L)).thenReturn(2L);
+        when(optionRepository.findByIdAndProductId(5L, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> optionService.deleteOption(1L, 5L))
+            .isInstanceOf(OptionNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("상품에 속한 옵션을 삭제한다")
+    void deleteOption() {
+        Product product = product(1L);
+        Option option = option(product);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(optionRepository.countByProductId(1L)).thenReturn(2L);
+        when(optionRepository.findByIdAndProductId(5L, 1L)).thenReturn(Optional.of(option));
+
+        optionService.deleteOption(1L, 5L);
+
+        verify(optionRepository).delete(option);
     }
 
     @Test

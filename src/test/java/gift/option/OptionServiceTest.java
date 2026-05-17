@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,7 +55,7 @@ class OptionServiceTest {
     void deleteOptionNotFound() {
         Product product = product(1L);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(optionRepository.findByProductId(1L)).thenReturn(List.of(option(product), option(product)));
+        when(optionRepository.countByProductId(1L)).thenReturn(2L);
         when(optionRepository.findById(999999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> optionService.deleteOption(1L, 999999L))
@@ -68,7 +67,7 @@ class OptionServiceTest {
     void deleteLastOption() {
         Product product = product(3L);
         when(productRepository.findById(3L)).thenReturn(Optional.of(product));
-        when(optionRepository.findByProductId(3L)).thenReturn(List.of(option(product)));
+        when(optionRepository.countByProductId(3L)).thenReturn(1L);
 
         assertThatThrownBy(() -> optionService.deleteOption(3L, 5L))
             .isInstanceOf(OptionDeletionNotAllowedException.class);

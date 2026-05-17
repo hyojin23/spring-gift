@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -30,6 +31,17 @@ class AdminProductControllerTest {
         mockMvc.perform(get("/admin/products"))
             .andExpect(status().isOk())
             .andExpect(view().name("product/list"))
+            .andExpect(model().attributeExists("products"));
+    }
+
+    @Test
+    @DisplayName("관리자 상품 목록 화면은 flash 오류 메시지를 표시할 수 있다")
+    void listWithError() throws Exception {
+        mockMvc.perform(get("/admin/products")
+                .flashAttr("error", "상품이 존재하지 않습니다. id=999999"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("product/list"))
+            .andExpect(model().attribute("error", "상품이 존재하지 않습니다. id=999999"))
             .andExpect(model().attributeExists("products"));
     }
 
@@ -95,6 +107,15 @@ class AdminProductControllerTest {
     }
 
     @Test
+    @DisplayName("존재하지 않는 상품 수정 화면에 접근하면 오류 메시지와 함께 상품 목록으로 redirect한다")
+    void editFormProductNotFound() throws Exception {
+        mockMvc.perform(get("/admin/products/999999/edit"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/admin/products"))
+            .andExpect(flash().attribute("error", "상품이 존재하지 않습니다. id=999999"));
+    }
+
+    @Test
     @DisplayName("관리자 상품을 수정하면 상품 목록으로 redirect한다")
     void update() throws Exception {
         mockMvc.perform(post("/admin/products/1/edit")
@@ -104,6 +125,45 @@ class AdminProductControllerTest {
                 .param("categoryId", "1"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/admin/products"));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 상품 수정 요청은 오류 메시지와 함께 상품 목록으로 redirect한다")
+    void updateProductNotFound() throws Exception {
+        mockMvc.perform(post("/admin/products/999999/edit")
+                .param("name", "수정상품")
+                .param("price", "2000")
+                .param("imageUrl", "https://example.com/updated-product.jpg")
+                .param("categoryId", "1"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/admin/products"))
+            .andExpect(flash().attribute("error", "상품이 존재하지 않습니다. id=999999"));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 카테고리로 상품을 등록하면 오류 메시지와 함께 상품 목록으로 redirect한다")
+    void createCategoryNotFound() throws Exception {
+        mockMvc.perform(post("/admin/products")
+                .param("name", "관리상품")
+                .param("price", "1000")
+                .param("imageUrl", "https://example.com/admin-product.jpg")
+                .param("categoryId", "999999"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/admin/products"))
+            .andExpect(flash().attribute("error", "카테고리가 존재하지 않습니다. id=999999"));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 카테고리로 상품을 수정하면 오류 메시지와 함께 상품 목록으로 redirect한다")
+    void updateCategoryNotFound() throws Exception {
+        mockMvc.perform(post("/admin/products/1/edit")
+                .param("name", "수정상품")
+                .param("price", "2000")
+                .param("imageUrl", "https://example.com/updated-product.jpg")
+                .param("categoryId", "999999"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/admin/products"))
+            .andExpect(flash().attribute("error", "카테고리가 존재하지 않습니다. id=999999"));
     }
 
     @Test

@@ -2,10 +2,11 @@ package gift.product;
 
 import gift.category.Category;
 import gift.category.CategoryRepository;
+import gift.product.exception.AdminProductCategoryNotFoundException;
+import gift.product.exception.AdminProductNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 public class AdminProductService {
@@ -28,7 +29,7 @@ public class AdminProductService {
 
     public Product getProduct(Long id) {
         return productRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("상품이 존재하지 않습니다. id=" + id));
+            .orElseThrow(() -> new AdminProductNotFoundException(id));
     }
 
     public List<String> validateName(String name) {
@@ -54,6 +55,6 @@ public class AdminProductService {
 
     private Category getCategory(Long id) {
         return categoryRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("카테고리가 존재하지 않습니다. id=" + id));
+            .orElseThrow(() -> new AdminProductCategoryNotFoundException(id));
     }
 }

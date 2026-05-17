@@ -69,7 +69,7 @@ public class OptionService {
     }
 
     private void validateCanDelete(Long productId) {
-        if (optionRepository.findByProductId(productId).size() <= 1) {
+        if (optionRepository.countByProductId(productId) <= 1) {
             throw new OptionDeletionNotAllowedException();
         }
     }

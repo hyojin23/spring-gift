@@ -8,6 +8,9 @@ import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
+import gift.product.exception.ProductCategoryNotFoundException;
+import gift.product.exception.ProductNotFoundException;
+import gift.product.exception.ProductValidationException;
 import gift.wish.exception.AuthenticationException;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
@@ -67,6 +70,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(OptionQuantityException.class)
     public ResponseEntity<ErrorResponse> handleOptionQuantity(OptionQuantityException exception) {
         return error(HttpStatus.BAD_REQUEST, "OPTION.INVALID_QUANTITY", exception.getMessage());
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProductNotFound(ProductNotFoundException exception) {
+        return error(HttpStatus.NOT_FOUND, "PRODUCT.NOT_FOUND", exception.getMessage());
+    }
+
+    @ExceptionHandler(ProductCategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProductCategoryNotFound(ProductCategoryNotFoundException exception) {
+        return error(HttpStatus.NOT_FOUND, "PRODUCT.CATEGORY_NOT_FOUND", exception.getMessage());
+    }
+
+    @ExceptionHandler(ProductValidationException.class)
+    public ResponseEntity<ErrorResponse> handleProductValidation(ProductValidationException exception) {
+        return error(HttpStatus.BAD_REQUEST, "PRODUCT.INVALID_NAME", exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

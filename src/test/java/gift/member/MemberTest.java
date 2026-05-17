@@ -1,5 +1,7 @@
 package gift.member;
 
+import gift.member.exception.InsufficientMemberPointException;
+import gift.member.exception.InvalidMemberPointAmountException;
 import gift.member.exception.MemberValidationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -72,6 +74,62 @@ class MemberTest {
 
         assertThat(member.getEmail()).isEqualTo("member@example.com");
         assertThat(member.getPassword()).isEqualTo("password");
+    }
+
+    @Test
+    @DisplayName("회원 포인트를 충전한다")
+    void chargePoint() {
+        Member member = member();
+
+        member.chargePoint(1000);
+
+        assertThat(member.getPoint()).isEqualTo(1000);
+    }
+
+    @Test
+    @DisplayName("0 이하 금액으로 포인트를 충전할 수 없다")
+    void chargeNonPositivePoint() {
+        Member member = member();
+
+        assertThatThrownBy(() -> member.chargePoint(0))
+            .isInstanceOf(InvalidMemberPointAmountException.class)
+            .hasMessage("포인트 금액은 1 이상이어야 합니다.");
+        assertThat(member.getPoint()).isZero();
+    }
+
+    @Test
+    @DisplayName("회원 포인트를 차감한다")
+    void deductPoint() {
+        Member member = member();
+        member.chargePoint(1000);
+
+        member.deductPoint(500);
+
+        assertThat(member.getPoint()).isEqualTo(500);
+    }
+
+    @Test
+    @DisplayName("0 이하 금액으로 포인트를 차감할 수 없다")
+    void deductNonPositivePoint() {
+        Member member = member();
+        member.chargePoint(1000);
+
+        assertThatThrownBy(() -> member.deductPoint(0))
+            .isInstanceOf(InvalidMemberPointAmountException.class)
+            .hasMessage("포인트 금액은 1 이상이어야 합니다.");
+        assertThat(member.getPoint()).isEqualTo(1000);
+    }
+
+    @Test
+    @DisplayName("보유 포인트보다 큰 금액을 차감할 수 없다")
+    void deductPointInsufficientPoint() {
+        Member member = member();
+        member.chargePoint(1000);
+
+        assertThatThrownBy(() -> member.deductPoint(1500))
+            .isInstanceOf(InsufficientMemberPointException.class)
+            .hasMessage("포인트가 부족합니다.");
+        assertThat(member.getPoint()).isEqualTo(1000);
     }
 
     private Member member() {

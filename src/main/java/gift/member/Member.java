@@ -1,5 +1,7 @@
 package gift.member;
 
+import gift.member.exception.InsufficientMemberPointException;
+import gift.member.exception.InvalidMemberPointAmountException;
 import gift.member.exception.MemberValidationException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -66,7 +68,7 @@ public class Member {
 
     public void chargePoint(int amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Amount must be greater than zero.");
+            throw new InvalidMemberPointAmountException();
         }
         this.point += amount;
     }
@@ -74,10 +76,10 @@ public class Member {
     // point deduction for order payment
     public void deductPoint(int amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("차감 금액은 1 이상이어야 합니다.");
+            throw new InvalidMemberPointAmountException();
         }
         if (amount > this.point) {
-            throw new IllegalArgumentException("포인트가 부족합니다.");
+            throw new InsufficientMemberPointException();
         }
         this.point -= amount;
     }

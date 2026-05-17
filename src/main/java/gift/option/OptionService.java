@@ -43,8 +43,7 @@ public class OptionService {
         findProduct(productId);
         validateCanDelete(productId);
 
-        Option option = optionRepository.findById(optionId)
-            .filter(found -> found.getProduct().getId().equals(productId))
+        Option option = optionRepository.findByIdAndProductId(optionId, productId)
             .orElseThrow(OptionNotFoundException::new);
 
         optionRepository.delete(option);

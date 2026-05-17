@@ -1,6 +1,8 @@
 package gift.global;
 
 import gift.global.exception.ErrorResponse;
+import gift.member.exception.DuplicateMemberEmailException;
+import gift.member.exception.InvalidMemberCredentialsException;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
@@ -32,6 +34,30 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("AUTH.UNAUTHORIZED");
+    }
+
+    @Test
+    @DisplayName("회원 중복 이메일 예외를 400 에러 응답으로 변환한다")
+    void handleDuplicateMemberEmail() {
+        ResponseEntity<ErrorResponse> response = handler.handleDuplicateMemberEmail(
+            new DuplicateMemberEmailException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("MEMBER.DUPLICATE_EMAIL");
+    }
+
+    @Test
+    @DisplayName("회원 로그인 실패 예외를 401 에러 응답으로 변환한다")
+    void handleInvalidMemberCredentials() {
+        ResponseEntity<ErrorResponse> response = handler.handleInvalidMemberCredentials(
+            new InvalidMemberCredentialsException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("MEMBER.INVALID_CREDENTIALS");
     }
 
     @Test

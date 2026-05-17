@@ -6,6 +6,7 @@ import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
+import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
 import gift.wish.exception.AuthenticationException;
 import gift.wish.exception.UnauthorizedWishAccessException;
@@ -61,6 +62,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(OptionValidationException.class)
     public ResponseEntity<ErrorResponse> handleOptionValidation(OptionValidationException exception) {
         return error(HttpStatus.BAD_REQUEST, "OPTION.INVALID_NAME", exception.getMessage());
+    }
+
+    @ExceptionHandler(OptionQuantityException.class)
+    public ResponseEntity<ErrorResponse> handleOptionQuantity(OptionQuantityException exception) {
+        return error(HttpStatus.BAD_REQUEST, "OPTION.INVALID_QUANTITY", exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

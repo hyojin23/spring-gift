@@ -5,6 +5,7 @@ import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
+import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
 import gift.wish.exception.AuthenticationException;
 import gift.wish.exception.UnauthorizedWishAccessException;
@@ -108,5 +109,18 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("OPTION.INVALID_NAME");
+    }
+
+    @Test
+    @DisplayName("옵션 수량 예외를 400 에러 응답으로 변환한다")
+    void handleOptionQuantity() {
+        ResponseEntity<ErrorResponse> response = handler.handleOptionQuantity(
+            new OptionQuantityException("차감 수량은 1 이상이어야 합니다.")
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("OPTION.INVALID_QUANTITY");
+        assertThat(response.getBody().message()).isEqualTo("차감 수량은 1 이상이어야 합니다.");
     }
 }

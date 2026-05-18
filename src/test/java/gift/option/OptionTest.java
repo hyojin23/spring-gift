@@ -1,5 +1,6 @@
 package gift.option;
 
+import gift.category.Category;
 import gift.option.exception.OptionQuantityException;
 import gift.product.Product;
 import org.junit.jupiter.api.DisplayName;
@@ -69,6 +70,10 @@ class OptionTest {
     }
 
     private Product product() {
-        return new Product("상품", 1000, "https://example.com/product.jpg", null);
+        return new Product("상품", 1000, "https://example.com/product.jpg", category());
+    }
+
+    private Category category() {
+        return new Category("카테고리", "#FFFFFF", "https://example.com/category.jpg", "설명");
     }
 }

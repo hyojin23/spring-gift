@@ -3,10 +3,14 @@ package gift.order;
 import gift.category.Category;
 import gift.member.Member;
 import gift.member.MemberRepository;
+import gift.member.exception.InsufficientMemberPointException;
 import gift.option.Option;
 import gift.option.OptionRepository;
+import gift.option.exception.OptionQuantityException;
 import gift.order.exception.OrderOptionNotFoundException;
 import gift.product.Product;
+import gift.wish.Wish;
+import gift.wish.WishRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
@@ -29,11 +33,13 @@ class OrderServiceTest {
     private final OrderRepository orderRepository = mock(OrderRepository.class);
     private final OptionRepository optionRepository = mock(OptionRepository.class);
     private final MemberRepository memberRepository = mock(MemberRepository.class);
+    private final WishRepository wishRepository = mock(WishRepository.class);
     private final OrderNotificationService orderNotificationService = mock(OrderNotificationService.class);
     private final OrderService orderService = new OrderService(
         orderRepository,
         optionRepository,
         memberRepository,
+        wishRepository,
         orderNotificationService
     );
 
@@ -57,10 +63,13 @@ class OrderServiceTest {
         Member member = member();
         member.chargePoint(10_000);
         Option option = option();
+        Wish wish = new Wish(member.getId(), option.getProduct());
         OrderRequest request = new OrderRequest(1L, 2, "선물 메시지");
         Order saved = order(option, 1L, 2);
         when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
         when(orderRepository.save(any(Order.class))).thenReturn(saved);
+        when(wishRepository.findByMemberIdAndProductId(member.getId(), option.getProduct().getId()))
+            .thenReturn(Optional.of(wish));
 
         OrderResponse response = orderService.createOrder(member, request);
 
@@ -69,6 +78,27 @@ class OrderServiceTest {
         assertThat(member.getPoint()).isEqualTo(8_000);
         verify(optionRepository).save(option);
         verify(memberRepository).save(member);
+        verify(wishRepository).delete(wish);
+        verify(orderNotificationService).sendOrderCreatedMessage(member, saved, option);
+    }
+
+    @Test
+    @DisplayName("주문 생성 시 위시리스트에 주문 상품이 없으면 삭제하지 않는다")
+    void createOrderWithoutWish() {
+        Member member = member();
+        member.chargePoint(10_000);
+        Option option = option();
+        OrderRequest request = new OrderRequest(1L, 2, "선물 메시지");
+        Order saved = order(option, 1L, 2);
+        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
+        when(orderRepository.save(any(Order.class))).thenReturn(saved);
+        when(wishRepository.findByMemberIdAndProductId(member.getId(), option.getProduct().getId()))
+            .thenReturn(Optional.empty());
+
+        OrderResponse response = orderService.createOrder(member, request);
+
+        assertThat(response.optionId()).isEqualTo(1L);
+        verify(wishRepository, never()).delete(any());
         verify(orderNotificationService).sendOrderCreatedMessage(member, saved, option);
     }
 
@@ -85,6 +115,42 @@ class OrderServiceTest {
 
         verify(optionRepository, never()).save(any());
         verify(memberRepository, never()).save(any());
+        verify(orderRepository, never()).save(any());
+        verify(wishRepository, never()).findByMemberIdAndProductId(any(), any());
+        verify(wishRepository, never()).delete(any());
+    }
+
+    @Test
+    @DisplayName("재고 부족으로 주문에 실패하면 위시리스트를 정리하지 않는다")
+    void createOrderInsufficientQuantityDoesNotCleanupWish() {
+        Member member = member();
+        member.chargePoint(10_000);
+        Option option = option();
+        OrderRequest request = new OrderRequest(1L, 11, "선물 메시지");
+        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
+
+        assertThatThrownBy(() -> orderService.createOrder(member, request))
+            .isInstanceOf(OptionQuantityException.class);
+
+        verify(wishRepository, never()).findByMemberIdAndProductId(any(), any());
+        verify(wishRepository, never()).delete(any());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("포인트 부족으로 주문에 실패하면 위시리스트를 정리하지 않는다")
+    void createOrderInsufficientPointDoesNotCleanupWish() {
+        Member member = member();
+        member.chargePoint(1_000);
+        Option option = option();
+        OrderRequest request = new OrderRequest(1L, 2, "선물 메시지");
+        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
+
+        assertThatThrownBy(() -> orderService.createOrder(member, request))
+            .isInstanceOf(InsufficientMemberPointException.class);
+
+        verify(wishRepository, never()).findByMemberIdAndProductId(any(), any());
+        verify(wishRepository, never()).delete(any());
         verify(orderRepository, never()).save(any());
     }
 

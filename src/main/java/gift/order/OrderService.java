@@ -47,8 +47,8 @@ public class OrderService {
         option.subtractQuantity(request.quantity());
         optionRepository.save(option);
 
-        int price = option.getProduct().getPrice() * request.quantity();
-        member.deductPoint(price);
+        int totalPrice = calculateTotalPrice(option, request.quantity());
+        member.deductPoint(totalPrice);
         memberRepository.save(member);
 
         Order saved = orderRepository.save(new Order(option, member.getId(), request.quantity(), request.message()));
@@ -61,5 +61,9 @@ public class OrderService {
     private void cleanupWish(Long memberId, Option option) {
         wishRepository.findByMemberIdAndProductId(memberId, option.getProduct().getId())
             .ifPresent(wishRepository::delete);
+    }
+
+    private int calculateTotalPrice(Option option, int quantity) {
+        return option.getProduct().getPrice() * quantity;
     }
 }

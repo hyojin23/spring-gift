@@ -5,6 +5,7 @@ import gift.member.Member;
 import gift.member.MemberRepository;
 import gift.option.Option;
 import gift.option.OptionRepository;
+import gift.order.exception.OrderOptionNotFoundException;
 import gift.product.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,9 +18,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,10 +64,9 @@ class OrderServiceTest {
         when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
         when(orderRepository.save(any(Order.class))).thenReturn(saved);
 
-        Optional<OrderResponse> response = orderService.createOrder(member, request);
+        OrderResponse response = orderService.createOrder(member, request);
 
-        assertThat(response).isPresent();
-        assertThat(response.get().optionId()).isEqualTo(1L);
+        assertThat(response.optionId()).isEqualTo(1L);
         assertThat(option.getQuantity()).isEqualTo(8);
         assertThat(member.getPoint()).isEqualTo(8_000);
         verify(optionRepository).save(option);
@@ -72,15 +74,19 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않는 옵션으로 주문하면 빈 결과를 반환한다")
+    @DisplayName("존재하지 않는 옵션으로 주문하면 주문 옵션 미존재 예외가 발생한다")
     void createOrderOptionNotFound() {
         Member member = member();
         OrderRequest request = new OrderRequest(999999L, 1, "선물 메시지");
         when(optionRepository.findById(999999L)).thenReturn(Optional.empty());
 
-        Optional<OrderResponse> response = orderService.createOrder(member, request);
+        assertThatThrownBy(() -> orderService.createOrder(member, request))
+            .isInstanceOf(OrderOptionNotFoundException.class)
+            .hasMessageContaining("주문할 옵션을 찾을 수 없습니다.");
 
-        assertThat(response).isEmpty();
+        verify(optionRepository, never()).save(any());
+        verify(memberRepository, never()).save(any());
+        verify(orderRepository, never()).save(any());
     }
 
     @Test

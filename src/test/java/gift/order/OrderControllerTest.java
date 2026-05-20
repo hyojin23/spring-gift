@@ -92,7 +92,45 @@ class OrderControllerTest {
                         "message": "선물 메시지"
                     }
                     """))
-            .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("ORDER.OPTION_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("주문할 옵션을 찾을 수 없습니다. optionId=999999"));
+    }
+
+    @Test
+    @DisplayName("포인트가 부족하면 400 에러 응답을 반환한다")
+    void createOrderInsufficientPoint() throws Exception {
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", bearerToken("user2@example.com"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "optionId": 1,
+                        "quantity": 1,
+                        "message": "선물 메시지"
+                    }
+                    """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("MEMBER.INSUFFICIENT_POINT"))
+            .andExpect(jsonPath("$.message").value("포인트가 부족합니다."));
+    }
+
+    @Test
+    @DisplayName("재고가 부족하면 기존 옵션 수량 에러 응답을 반환한다")
+    void createOrderInsufficientQuantity() throws Exception {
+        mockMvc.perform(post("/api/orders")
+                .header("Authorization", bearerToken("user1@example.com"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "optionId": 8,
+                        "quantity": 9,
+                        "message": "선물 메시지"
+                    }
+                    """))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("OPTION.INVALID_QUANTITY"))
+            .andExpect(jsonPath("$.message").value("차감할 수량이 현재 재고보다 많습니다."));
     }
 
     private String bearerToken(String email) {

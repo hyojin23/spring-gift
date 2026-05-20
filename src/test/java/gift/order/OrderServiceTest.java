@@ -17,10 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,12 +29,12 @@ class OrderServiceTest {
     private final OrderRepository orderRepository = mock(OrderRepository.class);
     private final OptionRepository optionRepository = mock(OptionRepository.class);
     private final MemberRepository memberRepository = mock(MemberRepository.class);
-    private final KakaoMessageClient kakaoMessageClient = mock(KakaoMessageClient.class);
+    private final OrderNotificationService orderNotificationService = mock(OrderNotificationService.class);
     private final OrderService orderService = new OrderService(
         orderRepository,
         optionRepository,
         memberRepository,
-        kakaoMessageClient
+        orderNotificationService
     );
 
     @Test
@@ -71,6 +69,7 @@ class OrderServiceTest {
         assertThat(member.getPoint()).isEqualTo(8_000);
         verify(optionRepository).save(option);
         verify(memberRepository).save(member);
+        verify(orderNotificationService).sendOrderCreatedMessage(member, saved, option);
     }
 
     @Test
@@ -87,24 +86,6 @@ class OrderServiceTest {
         verify(optionRepository, never()).save(any());
         verify(memberRepository, never()).save(any());
         verify(orderRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("카카오 메시지 발송에 실패해도 주문 생성은 성공한다")
-    void createOrderKakaoMessageFailure() {
-        Member member = member();
-        member.chargePoint(10_000);
-        member.updateKakaoAccessToken("kakao-token");
-        Option option = option();
-        OrderRequest request = new OrderRequest(1L, 1, "선물 메시지");
-        Order saved = order(option, 1L, 1);
-        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
-        when(orderRepository.save(any(Order.class))).thenReturn(saved);
-        doThrow(new RuntimeException("kakao failure"))
-            .when(kakaoMessageClient).sendToMe("kakao-token", saved, option.getProduct());
-
-        assertThatCode(() -> orderService.createOrder(member, request))
-            .doesNotThrowAnyException();
     }
 
     private Member member() {

@@ -16,18 +16,18 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OptionRepository optionRepository;
     private final MemberRepository memberRepository;
-    private final KakaoMessageClient kakaoMessageClient;
+    private final OrderNotificationService orderNotificationService;
 
     public OrderService(
         OrderRepository orderRepository,
         OptionRepository optionRepository,
         MemberRepository memberRepository,
-        KakaoMessageClient kakaoMessageClient
+        OrderNotificationService orderNotificationService
     ) {
         this.orderRepository = orderRepository;
         this.optionRepository = optionRepository;
         this.memberRepository = memberRepository;
-        this.kakaoMessageClient = kakaoMessageClient;
+        this.orderNotificationService = orderNotificationService;
     }
 
     @Transactional(readOnly = true)
@@ -49,17 +49,7 @@ public class OrderService {
 
         Order saved = orderRepository.save(new Order(option, member.getId(), request.quantity(), request.message()));
 
-        sendKakaoMessageIfPossible(member, saved, option);
+        orderNotificationService.sendOrderCreatedMessage(member, saved, option);
         return OrderResponse.from(saved);
-    }
-
-    private void sendKakaoMessageIfPossible(Member member, Order order, Option option) {
-        if (member.getKakaoAccessToken() == null) {
-            return;
-        }
-        try {
-            kakaoMessageClient.sendToMe(member.getKakaoAccessToken(), order, option.getProduct());
-        } catch (Exception ignored) {
-        }
     }
 }

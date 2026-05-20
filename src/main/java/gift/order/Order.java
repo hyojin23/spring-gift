@@ -1,6 +1,7 @@
 package gift.order;
 
 import gift.option.Option;
+import gift.order.exception.OrderValidationException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,11 +32,32 @@ public class Order {
     }
 
     public Order(Option option, Long memberId, int quantity, String message) {
+        validateOption(option);
+        validateMemberId(memberId);
+        validateQuantity(quantity);
         this.option = option;
         this.memberId = memberId;
         this.quantity = quantity;
         this.message = message;
         this.orderDateTime = LocalDateTime.now();
+    }
+
+    private void validateOption(Option option) {
+        if (option == null) {
+            throw new OrderValidationException("주문 옵션은 필수입니다.");
+        }
+    }
+
+    private void validateMemberId(Long memberId) {
+        if (memberId == null) {
+            throw new OrderValidationException("주문 회원 ID는 필수입니다.");
+        }
+    }
+
+    private void validateQuantity(int quantity) {
+        if (quantity < 1) {
+            throw new OrderValidationException("주문 수량은 1 이상이어야 합니다.");
+        }
     }
 
     public Long getId() {

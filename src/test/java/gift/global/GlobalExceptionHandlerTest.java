@@ -11,6 +11,7 @@ import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
 import gift.order.exception.OrderOptionNotFoundException;
+import gift.order.exception.OrderValidationException;
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
@@ -179,6 +180,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("ORDER.OPTION_NOT_FOUND");
         assertThat(response.getBody().message()).isEqualTo("주문할 옵션을 찾을 수 없습니다. optionId=999999");
+    }
+
+    @Test
+    @DisplayName("주문 검증 예외를 400 에러 응답으로 변환한다")
+    void handleOrderValidation() {
+        ResponseEntity<ErrorResponse> response = handler.handleOrderValidation(
+            new OrderValidationException("주문 수량은 1 이상이어야 합니다.")
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("ORDER.INVALID");
+        assertThat(response.getBody().message()).isEqualTo("주문 수량은 1 이상이어야 합니다.");
     }
 
     @Test

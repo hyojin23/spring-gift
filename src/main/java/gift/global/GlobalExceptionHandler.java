@@ -3,6 +3,7 @@ package gift.global;
 import gift.category.CategoryNotFoundException;
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
+import gift.member.exception.InsufficientMemberPointException;
 import gift.member.exception.InvalidMemberCredentialsException;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
@@ -10,6 +11,7 @@ import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
+import gift.order.exception.OrderOptionNotFoundException;
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
@@ -42,6 +44,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidMemberCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleInvalidMemberCredentials(InvalidMemberCredentialsException exception) {
         return error(HttpStatus.UNAUTHORIZED, "MEMBER.INVALID_CREDENTIALS", exception.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientMemberPointException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientMemberPoint(InsufficientMemberPointException exception) {
+        return error(HttpStatus.BAD_REQUEST, "MEMBER.INSUFFICIENT_POINT", exception.getMessage());
     }
 
     @ExceptionHandler(UnauthorizedWishAccessException.class)
@@ -82,6 +89,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(OptionQuantityException.class)
     public ResponseEntity<ErrorResponse> handleOptionQuantity(OptionQuantityException exception) {
         return error(HttpStatus.BAD_REQUEST, "OPTION.INVALID_QUANTITY", exception.getMessage());
+    }
+
+    @ExceptionHandler(OrderOptionNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderOptionNotFound(OrderOptionNotFoundException exception) {
+        return error(HttpStatus.NOT_FOUND, "ORDER.OPTION_NOT_FOUND", exception.getMessage());
     }
 
     @ExceptionHandler(ProductNotFoundException.class)

@@ -4,12 +4,11 @@ import gift.member.Member;
 import gift.member.MemberRepository;
 import gift.option.Option;
 import gift.option.OptionRepository;
+import gift.order.exception.OrderOptionNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -38,13 +37,9 @@ public class OrderService {
     }
 
     @Transactional
-    public Optional<OrderResponse> createOrder(Member member, OrderRequest request) {
-        Optional<Option> optionalOption = optionRepository.findById(request.optionId());
-        if (optionalOption.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Option option = optionalOption.get();
+    public OrderResponse createOrder(Member member, OrderRequest request) {
+        Option option = optionRepository.findById(request.optionId())
+            .orElseThrow(() -> new OrderOptionNotFoundException(request.optionId()));
         option.subtractQuantity(request.quantity());
         optionRepository.save(option);
 
@@ -55,7 +50,7 @@ public class OrderService {
         Order saved = orderRepository.save(new Order(option, member.getId(), request.quantity(), request.message()));
 
         sendKakaoMessageIfPossible(member, saved, option);
-        return Optional.of(OrderResponse.from(saved));
+        return OrderResponse.from(saved);
     }
 
     private void sendKakaoMessageIfPossible(Member member, Order order, Option option) {

@@ -41,14 +41,6 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    // order flow:
-    // 1. auth check
-    // 2. validate option
-    // 3. subtract stock
-    // 4. deduct points
-    // 5. save order
-    // 6. cleanup wish
-    // 7. send kakao notification
     @PostMapping
     public ResponseEntity<?> createOrder(
         @RequestHeader("Authorization") String authorization,
@@ -61,11 +53,7 @@ public class OrderController {
         }
 
         var response = orderService.createOrder(member, request);
-        if (response.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.created(URI.create("/api/orders/" + response.get().id()))
-            .body(response.get());
+        return ResponseEntity.created(URI.create("/api/orders/" + response.id()))
+            .body(response);
     }
 }

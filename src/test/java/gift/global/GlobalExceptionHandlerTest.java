@@ -2,6 +2,7 @@ package gift.global;
 
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
+import gift.member.exception.InsufficientMemberPointException;
 import gift.member.exception.InvalidMemberCredentialsException;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
@@ -9,6 +10,7 @@ import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
+import gift.order.exception.OrderOptionNotFoundException;
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
@@ -58,6 +60,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("MEMBER.INVALID_CREDENTIALS");
+    }
+
+    @Test
+    @DisplayName("회원 포인트 부족 예외를 400 에러 응답으로 변환한다")
+    void handleInsufficientMemberPoint() {
+        ResponseEntity<ErrorResponse> response = handler.handleInsufficientMemberPoint(
+            new InsufficientMemberPointException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("MEMBER.INSUFFICIENT_POINT");
+        assertThat(response.getBody().message()).isEqualTo("포인트가 부족합니다.");
     }
 
     @Test
@@ -151,6 +166,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("OPTION.INVALID_QUANTITY");
         assertThat(response.getBody().message()).isEqualTo("차감 수량은 1 이상이어야 합니다.");
+    }
+
+    @Test
+    @DisplayName("주문 옵션 미존재 예외를 404 에러 응답으로 변환한다")
+    void handleOrderOptionNotFound() {
+        ResponseEntity<ErrorResponse> response = handler.handleOrderOptionNotFound(
+            new OrderOptionNotFoundException(999999L)
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("ORDER.OPTION_NOT_FOUND");
+        assertThat(response.getBody().message()).isEqualTo("주문할 옵션을 찾을 수 없습니다. optionId=999999");
     }
 
     @Test

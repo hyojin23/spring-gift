@@ -6,7 +6,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,26 +16,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class KakaoAuthControllerTest {
 
-    private final KakaoLoginProperties properties = new KakaoLoginProperties(
-        "kakao-client-id",
-        "kakao-client-secret",
-        "http://localhost:8080/api/auth/kakao/callback"
-    );
+    private final KakaoLoginUrlProvider kakaoLoginUrlProvider = mock(KakaoLoginUrlProvider.class);
     private final KakaoAuthService kakaoAuthService = mock(KakaoAuthService.class);
     private final MockMvc mockMvc = MockMvcBuilders
-        .standaloneSetup(new KakaoAuthController(properties, kakaoAuthService))
+        .standaloneSetup(new KakaoAuthController(kakaoLoginUrlProvider, kakaoAuthService))
         .build();
 
     @Test
     @DisplayName("카카오 로그인 URL로 redirect한다")
     void login() throws Exception {
+        when(kakaoLoginUrlProvider.createLoginUrl()).thenReturn("https://kauth.kakao.com/oauth/authorize?client_id=id");
+
         mockMvc.perform(get("/api/auth/kakao/login"))
             .andExpect(status().isFound())
-            .andExpect(header().string(HttpHeaders.LOCATION, containsString("https://kauth.kakao.com/oauth/authorize")))
-            .andExpect(header().string(HttpHeaders.LOCATION, containsString("response_type=code")))
-            .andExpect(header().string(HttpHeaders.LOCATION, containsString("client_id=kakao-client-id")))
-            .andExpect(header().string(HttpHeaders.LOCATION, containsString("redirect_uri=http://localhost:8080/api/auth/kakao/callback")))
-            .andExpect(header().string(HttpHeaders.LOCATION, containsString("scope=account_email,talk_message")));
+            .andExpect(header().string(HttpHeaders.LOCATION, "https://kauth.kakao.com/oauth/authorize?client_id=id"));
+
+        verify(kakaoLoginUrlProvider).createLoginUrl();
     }
 
     @Test

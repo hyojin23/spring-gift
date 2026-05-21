@@ -103,7 +103,9 @@ class CategoryControllerTest {
         mockMvc.perform(put("/api/categories/999999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(request))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("CATEGORY.NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("카테고리를 찾을 수 없습니다."));
     }
 
     @Test

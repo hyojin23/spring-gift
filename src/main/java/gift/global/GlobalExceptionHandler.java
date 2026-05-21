@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CategoryNotFoundException.class)
-    public ResponseEntity<Void> handleCategoryNotFound() {
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ErrorResponse> handleCategoryNotFound(CategoryNotFoundException exception) {
+        return error(HttpStatus.NOT_FOUND, "CATEGORY.NOT_FOUND", exception.getMessage());
     }
 
     @ExceptionHandler(AuthenticationException.class)

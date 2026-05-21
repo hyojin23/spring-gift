@@ -1,5 +1,6 @@
 package gift.global;
 
+import gift.category.CategoryNotFoundException;
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InsufficientMemberPointException;
@@ -28,6 +29,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+
+    @Test
+    @DisplayName("카테고리 미존재 예외를 404 에러 응답으로 변환한다")
+    void handleCategoryNotFound() {
+        ResponseEntity<ErrorResponse> response = handler.handleCategoryNotFound(new CategoryNotFoundException());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("CATEGORY.NOT_FOUND");
+        assertThat(response.getBody().message()).isEqualTo("카테고리를 찾을 수 없습니다.");
+    }
 
     @Test
     @DisplayName("인증 예외를 401 에러 응답으로 변환한다")

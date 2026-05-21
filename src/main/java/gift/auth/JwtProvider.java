@@ -1,5 +1,7 @@
 package gift.auth;
 
+import gift.auth.exception.JwtTokenException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +38,19 @@ public class JwtProvider {
      * @return the email stored in the token's subject claim
      */
     public String getEmail(String token) {
-        return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .getSubject();
+        if (token == null || token.isBlank()) {
+            throw new JwtTokenException("유효하지 않은 JWT 토큰입니다.");
+        }
+        try {
+            return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new JwtTokenException("유효하지 않은 JWT 토큰입니다.", e);
+        }
     }
 
     /**

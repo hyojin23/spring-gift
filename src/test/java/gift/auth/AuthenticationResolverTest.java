@@ -1,8 +1,8 @@
 package gift.auth;
 
+import gift.auth.exception.JwtTokenException;
 import gift.member.Member;
 import gift.member.MemberRepository;
-import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -70,18 +70,7 @@ class AuthenticationResolverTest {
     @Test
     @DisplayName("JWT 파싱에 실패하면 null을 반환하고 회원을 조회하지 않는다")
     void extractMemberWithInvalidToken() {
-        when(jwtProvider.getEmail("invalid-token")).thenThrow(new JwtException("invalid token"));
-
-        Member result = authenticationResolver.extractMember("Bearer invalid-token");
-
-        assertThat(result).isNull();
-        verify(memberRepository, never()).findByEmail(org.mockito.ArgumentMatchers.any());
-    }
-
-    @Test
-    @DisplayName("JWT token 값이 잘못되면 null을 반환하고 회원을 조회하지 않는다")
-    void extractMemberWithIllegalToken() {
-        when(jwtProvider.getEmail("invalid-token")).thenThrow(new IllegalArgumentException("invalid token"));
+        when(jwtProvider.getEmail("invalid-token")).thenThrow(new JwtTokenException("유효하지 않은 JWT 토큰입니다."));
 
         Member result = authenticationResolver.extractMember("Bearer invalid-token");
 

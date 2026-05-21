@@ -1,8 +1,8 @@
 package gift.auth;
 
+import gift.auth.exception.JwtTokenException;
 import gift.member.Member;
 import gift.member.MemberRepository;
-import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +45,7 @@ public class AuthenticationResolver {
         try {
             final String email = jwtProvider.getEmail(token);
             return memberRepository.findByEmail(email);
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtTokenException e) {
             return Optional.empty();
         }
     }

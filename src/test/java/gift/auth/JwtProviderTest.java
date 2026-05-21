@@ -1,6 +1,6 @@
 package gift.auth;
 
-import io.jsonwebtoken.JwtException;
+import gift.auth.exception.JwtTokenException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,7 @@ class JwtProviderTest {
         String token = jwtProvider.createToken("member@example.com");
 
         assertThatThrownBy(() -> jwtProvider.getEmail(token))
-            .isInstanceOf(JwtException.class);
+            .isInstanceOf(JwtTokenException.class);
     }
 
     @Test
@@ -39,7 +39,7 @@ class JwtProviderTest {
         JwtProvider jwtProvider = jwtProvider(ONE_HOUR);
 
         assertThatThrownBy(() -> jwtProvider.getEmail("invalid-token"))
-            .isInstanceOf(JwtException.class);
+            .isInstanceOf(JwtTokenException.class);
     }
 
     @Test
@@ -50,7 +50,7 @@ class JwtProviderTest {
         String token = jwtProvider.createToken("member@example.com");
 
         assertThatThrownBy(() -> otherJwtProvider.getEmail(token))
-            .isInstanceOf(JwtException.class);
+            .isInstanceOf(JwtTokenException.class);
     }
 
     @Test
@@ -59,7 +59,8 @@ class JwtProviderTest {
         JwtProvider jwtProvider = jwtProvider(ONE_HOUR);
 
         assertThatThrownBy(() -> jwtProvider.getEmail(null))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(JwtTokenException.class)
+            .hasMessage("유효하지 않은 JWT 토큰입니다.");
     }
 
     @Test
@@ -68,7 +69,8 @@ class JwtProviderTest {
         JwtProvider jwtProvider = jwtProvider(ONE_HOUR);
 
         assertThatThrownBy(() -> jwtProvider.getEmail("   "))
-            .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(JwtTokenException.class)
+            .hasMessage("유효하지 않은 JWT 토큰입니다.");
     }
 
     private JwtProvider jwtProvider(long expiration) {

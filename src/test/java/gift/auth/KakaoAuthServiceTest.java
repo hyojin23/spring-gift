@@ -1,5 +1,6 @@
 package gift.auth;
 
+import gift.auth.exception.KakaoLoginException;
 import gift.member.Member;
 import gift.member.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -9,7 +10,9 @@ import org.mockito.ArgumentCaptor;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +64,32 @@ class KakaoAuthServiceTest {
         assertThat(token).isEqualTo("service-jwt-token");
         assertThat(member.getKakaoAccessToken()).isEqualTo("new-kakao-access-token");
         verify(memberRepository).save(member);
+    }
+
+    @Test
+    @DisplayName("카카오 access token이 비어 있으면 카카오 로그인 예외가 발생한다")
+    void loginWithBlankAccessToken() {
+        when(kakaoLoginClient.requestAccessToken("authorization-code"))
+            .thenReturn(new KakaoLoginClient.KakaoTokenResponse(" "));
+
+        assertThatThrownBy(() -> kakaoAuthService.login("authorization-code"))
+            .isInstanceOf(KakaoLoginException.class)
+            .hasMessage("카카오 access token이 비어 있습니다.");
+        verify(memberRepository, never()).save(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @DisplayName("카카오 사용자 이메일이 비어 있으면 카카오 로그인 예외가 발생한다")
+    void loginWithBlankEmail() {
+        when(kakaoLoginClient.requestAccessToken("authorization-code"))
+            .thenReturn(new KakaoLoginClient.KakaoTokenResponse("kakao-access-token"));
+        when(kakaoLoginClient.requestUserInfo("kakao-access-token"))
+            .thenReturn(kakaoUserResponse(" "));
+
+        assertThatThrownBy(() -> kakaoAuthService.login("authorization-code"))
+            .isInstanceOf(KakaoLoginException.class)
+            .hasMessage("카카오 사용자 이메일이 비어 있습니다.");
+        verify(memberRepository, never()).save(org.mockito.ArgumentMatchers.any());
     }
 
     private KakaoLoginClient.KakaoUserResponse kakaoUserResponse(String email) {

@@ -2,8 +2,11 @@ package gift.auth;
 
 import gift.member.Member;
 import gift.member.MemberRepository;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * Resolves the authenticated member from an Authorization header.
@@ -23,12 +26,27 @@ public class AuthenticationResolver {
     }
 
     public Member extractMember(String authorization) {
+        return extractBearerToken(authorization)
+            .flatMap(this::findMemberByToken)
+            .orElse(null);
+    }
+
+    private Optional<String> extractBearerToken(String authorization) {
+        if (authorization == null || authorization.isBlank()) {
+            return Optional.empty();
+        }
+        if (!authorization.startsWith("Bearer ")) {
+            return Optional.empty();
+        }
+        return Optional.of(authorization.substring("Bearer ".length()));
+    }
+
+    private Optional<Member> findMemberByToken(String token) {
         try {
-            final String token = authorization.replace("Bearer ", "");
             final String email = jwtProvider.getEmail(token);
-            return memberRepository.findByEmail(email).orElse(null);
-        } catch (Exception e) {
-            return null;
+            return memberRepository.findByEmail(email);
+        } catch (JwtException | IllegalArgumentException e) {
+            return Optional.empty();
         }
     }
 }

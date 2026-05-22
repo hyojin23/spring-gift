@@ -1,4 +1,4 @@
-package gift.category;
+package gift.category.exception;
 
 public class CategoryNotFoundException extends RuntimeException {
 

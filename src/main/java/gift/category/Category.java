@@ -1,5 +1,6 @@
 package gift.category;
 
+import gift.category.exception.CategoryValidationException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

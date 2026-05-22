@@ -1,7 +1,7 @@
 package gift.global;
 
-import gift.category.CategoryNotFoundException;
-import gift.category.CategoryValidationException;
+import gift.category.exception.CategoryNotFoundException;
+import gift.category.exception.CategoryValidationException;
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InsufficientMemberPointException;

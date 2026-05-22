@@ -105,6 +105,25 @@ class WishControllerTest {
     }
 
     @Test
+    @DisplayName("존재하지 않는 상품을 위시에 추가하면 404 에러 응답을 반환한다")
+    void addWishProductNotFound() throws Exception {
+        String request = """
+            {
+              "productId": 999999
+            }
+            """;
+
+        mockMvc.perform(post("/api/wishes")
+                .header("Authorization", bearerToken("user1@example.com"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("WISH.PRODUCT_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("위시에 추가할 상품을 찾을 수 없습니다."))
+            .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
     @DisplayName("본인 위시를 삭제하면 204를 반환한다")
     void deleteOwnWish() throws Exception {
         mockMvc.perform(delete("/api/wishes/1")

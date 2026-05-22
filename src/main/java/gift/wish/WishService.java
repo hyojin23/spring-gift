@@ -4,6 +4,7 @@ import gift.product.Product;
 import gift.product.ProductRepository;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
+import gift.wish.exception.WishProductNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class WishService {
     public WishAddResult addWish(Long memberId, Long productId) {
 
         Product product = productRepository.findById(productId)
-            .orElseThrow(WishNotFoundException::new);
+            .orElseThrow(WishProductNotFoundException::new);
 
         var existing = wishRepository.findByMemberIdAndProductId(memberId, product.getId()).orElse(null);
 

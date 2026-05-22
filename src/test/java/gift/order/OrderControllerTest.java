@@ -40,7 +40,18 @@ class OrderControllerTest {
     void getOrdersUnauthorized() throws Exception {
         mockMvc.perform(get("/api/orders")
                 .header("Authorization", "Bearer invalid-token"))
-            .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH.UNAUTHORIZED"))
+            .andExpect(jsonPath("$.message").value("인증 정보가 없거나 유효하지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("주문 목록 조회 시 인증 정보가 없으면 401 에러 응답을 반환한다")
+    void getOrdersWithoutAuthorization() throws Exception {
+        mockMvc.perform(get("/api/orders"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH.UNAUTHORIZED"))
+            .andExpect(jsonPath("$.message").value("인증 정보가 없거나 유효하지 않습니다."));
     }
 
     @Test
@@ -76,7 +87,26 @@ class OrderControllerTest {
                         "message": "선물 메시지"
                     }
                     """))
-            .andExpect(status().isUnauthorized());
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH.UNAUTHORIZED"))
+            .andExpect(jsonPath("$.message").value("인증 정보가 없거나 유효하지 않습니다."));
+    }
+
+    @Test
+    @DisplayName("주문 생성 시 인증 정보가 없으면 401 에러 응답을 반환한다")
+    void createOrderWithoutAuthorization() throws Exception {
+        mockMvc.perform(post("/api/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "optionId": 4,
+                        "quantity": 1,
+                        "message": "선물 메시지"
+                    }
+                    """))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("AUTH.UNAUTHORIZED"))
+            .andExpect(jsonPath("$.message").value("인증 정보가 없거나 유효하지 않습니다."));
     }
 
     @Test

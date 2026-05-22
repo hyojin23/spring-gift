@@ -1,7 +1,10 @@
 package gift.order;
 
 import gift.auth.AuthenticationResolver;
+import gift.member.Member;
+import gift.wish.exception.AuthenticationException;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,32 +31,32 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getOrders(
-        @RequestHeader("Authorization") String authorization,
+    public ResponseEntity<Page<OrderResponse>> getOrders(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
         Pageable pageable
     ) {
-        // auth check
-        var member = authenticationResolver.extractMember(authorization);
-        if (member == null) {
-            return ResponseEntity.status(401).build();
-        }
+        var member = extractMember(authorization);
         var orders = orderService.getOrders(member.getId(), pageable);
         return ResponseEntity.ok(orders);
     }
 
     @PostMapping
-    public ResponseEntity<?> createOrder(
-        @RequestHeader("Authorization") String authorization,
+    public ResponseEntity<OrderResponse> createOrder(
+        @RequestHeader(value = "Authorization", required = false) String authorization,
         @Valid @RequestBody OrderRequest request
     ) {
-        // auth check
-        var member = authenticationResolver.extractMember(authorization);
-        if (member == null) {
-            return ResponseEntity.status(401).build();
-        }
+        var member = extractMember(authorization);
 
         var response = orderService.createOrder(member, request);
         return ResponseEntity.created(URI.create("/api/orders/" + response.id()))
             .body(response);
+    }
+
+    private Member extractMember(String authorization) {
+        var member = authenticationResolver.extractMember(authorization);
+        if (member == null) {
+            throw new AuthenticationException();
+        }
+        return member;
     }
 }

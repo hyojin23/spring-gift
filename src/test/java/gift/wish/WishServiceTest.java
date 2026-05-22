@@ -3,6 +3,7 @@ package gift.wish;
 import gift.product.ProductRepository;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
+import gift.wish.exception.WishProductNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,12 +20,12 @@ class WishServiceTest {
     private final WishService wishService = new WishService(wishRepository, productRepository);
 
     @Test
-    @DisplayName("상품을 찾지 못하면 위시 미존재 예외를 던진다")
+    @DisplayName("상품을 찾지 못하면 위시 상품 미존재 예외를 던진다")
     void addWishProductNotFound() {
         when(productRepository.findById(999999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> wishService.addWish(1L, 999999L))
-            .isInstanceOf(WishNotFoundException.class);
+            .isInstanceOf(WishProductNotFoundException.class);
     }
 
     @Test

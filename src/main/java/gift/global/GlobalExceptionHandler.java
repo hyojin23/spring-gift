@@ -21,6 +21,7 @@ import gift.wish.exception.AuthenticationException;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
 import gift.wish.exception.WishProductNotFoundException;
+import gift.wish.exception.WishValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -72,6 +73,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(WishProductNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleWishProductNotFound(WishProductNotFoundException exception) {
         return error(HttpStatus.NOT_FOUND, "WISH.PRODUCT_NOT_FOUND", exception.getMessage());
+    }
+
+    @ExceptionHandler(WishValidationException.class)
+    public ResponseEntity<ErrorResponse> handleWishValidation(WishValidationException exception) {
+        return error(HttpStatus.BAD_REQUEST, "WISH.INVALID", exception.getMessage());
     }
 
     @ExceptionHandler(OptionProductNotFoundException.class)

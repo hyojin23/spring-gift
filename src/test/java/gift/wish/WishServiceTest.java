@@ -1,6 +1,8 @@
 package gift.wish;
 
+import gift.category.Category;
 import gift.product.ProductRepository;
+import gift.product.Product;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
 import gift.wish.exception.WishProductNotFoundException;
@@ -40,10 +42,18 @@ class WishServiceTest {
     @Test
     @DisplayName("다른 사용자의 위시를 삭제하려 하면 권한 예외를 던진다")
     void removeWishForbidden() {
-        var wish = new Wish(2L, null);
+        var wish = new Wish(2L, product());
         when(wishRepository.findById(1L)).thenReturn(Optional.of(wish));
 
         assertThatThrownBy(() -> wishService.removeWish(1L, 1L))
             .isInstanceOf(UnauthorizedWishAccessException.class);
+    }
+
+    private Product product() {
+        return new Product("상품", 10_000, "https://example.com/product.jpg", category());
+    }
+
+    private Category category() {
+        return new Category("카테고리", "#FFFFFF", "https://example.com/category.jpg", "설명");
     }
 }

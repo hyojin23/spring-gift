@@ -21,6 +21,7 @@ import gift.wish.exception.AuthenticationException;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
 import gift.wish.exception.WishProductNotFoundException;
+import gift.wish.exception.WishValidationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -136,6 +137,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("WISH.PRODUCT_NOT_FOUND");
         assertThat(response.getBody().message()).isEqualTo("위시에 추가할 상품을 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("위시 검증 예외를 400 에러 응답으로 변환한다")
+    void handleWishValidation() {
+        ResponseEntity<ErrorResponse> response = handler.handleWishValidation(
+            new WishValidationException("위시 상품은 필수입니다.")
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("WISH.INVALID");
+        assertThat(response.getBody().message()).isEqualTo("위시 상품은 필수입니다.");
     }
 
     @Test

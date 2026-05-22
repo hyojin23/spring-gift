@@ -1,6 +1,7 @@
 package gift.global;
 
 import gift.category.CategoryNotFoundException;
+import gift.category.CategoryValidationException;
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InsufficientMemberPointException;
@@ -39,6 +40,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("CATEGORY.NOT_FOUND");
         assertThat(response.getBody().message()).isEqualTo("카테고리를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("카테고리 검증 예외를 400 에러 응답으로 변환한다")
+    void handleCategoryValidation() {
+        ResponseEntity<ErrorResponse> response = handler.handleCategoryValidation(
+            new CategoryValidationException("카테고리 이름은 필수입니다.")
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("CATEGORY.INVALID");
+        assertThat(response.getBody().message()).isEqualTo("카테고리 이름은 필수입니다.");
     }
 
     @Test

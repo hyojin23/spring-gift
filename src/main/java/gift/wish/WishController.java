@@ -1,8 +1,6 @@
 package gift.wish;
 
-import gift.auth.AuthenticationResolver;
-import gift.member.Member;
-import gift.wish.exception.AuthenticationException;
+import gift.auth.AuthenticatedMemberResolver;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,14 +20,14 @@ import java.net.URI;
 @RequestMapping("/api/wishes")
 public class WishController {
     private final WishService wishService;
-    private final AuthenticationResolver authenticationResolver;
+    private final AuthenticatedMemberResolver authenticatedMemberResolver;
 
     public WishController(
         WishService wishService,
-        AuthenticationResolver authenticationResolver
+        AuthenticatedMemberResolver authenticatedMemberResolver
     ) {
         this.wishService = wishService;
-        this.authenticationResolver = authenticationResolver;
+        this.authenticatedMemberResolver = authenticatedMemberResolver;
     }
 
     @GetMapping
@@ -37,7 +35,7 @@ public class WishController {
         @RequestHeader(value = "Authorization", required = false) String authorization,
         Pageable pageable
     ) {
-        var member = extractMember(authorization);
+        var member = authenticatedMemberResolver.resolve(authorization);
         var wishes = wishService.getWishes(member.getId(), pageable);
         return ResponseEntity.ok(wishes);
     }
@@ -47,7 +45,7 @@ public class WishController {
         @RequestHeader(value = "Authorization", required = false) String authorization,
         @Valid @RequestBody WishRequest request
     ) {
-        var member = extractMember(authorization);
+        var member = authenticatedMemberResolver.resolve(authorization);
 
         var result = wishService.addWish(member.getId(), request.productId());
 
@@ -64,18 +62,10 @@ public class WishController {
         @RequestHeader(value = "Authorization", required = false) String authorization,
         @PathVariable Long id
     ) {
-        var member = extractMember(authorization);
+        var member = authenticatedMemberResolver.resolve(authorization);
 
         wishService.removeWish(member.getId(), id);
 
         return ResponseEntity.noContent().build();
-    }
-
-    private Member extractMember(String authorization) {
-        var member = authenticationResolver.extractMember(authorization);
-        if (member == null) {
-            throw new AuthenticationException();
-        }
-        return member;
     }
 }

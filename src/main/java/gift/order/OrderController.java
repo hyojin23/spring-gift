@@ -1,8 +1,6 @@
 package gift.order;
 
-import gift.auth.AuthenticationResolver;
-import gift.member.Member;
-import gift.wish.exception.AuthenticationException;
+import gift.auth.AuthenticatedMemberResolver;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +17,14 @@ import java.net.URI;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    private final AuthenticationResolver authenticationResolver;
+    private final AuthenticatedMemberResolver authenticatedMemberResolver;
     private final OrderService orderService;
 
     public OrderController(
-        AuthenticationResolver authenticationResolver,
+        AuthenticatedMemberResolver authenticatedMemberResolver,
         OrderService orderService
     ) {
-        this.authenticationResolver = authenticationResolver;
+        this.authenticatedMemberResolver = authenticatedMemberResolver;
         this.orderService = orderService;
     }
 
@@ -35,7 +33,7 @@ public class OrderController {
         @RequestHeader(value = "Authorization", required = false) String authorization,
         Pageable pageable
     ) {
-        var member = extractMember(authorization);
+        var member = authenticatedMemberResolver.resolve(authorization);
         var orders = orderService.getOrders(member.getId(), pageable);
         return ResponseEntity.ok(orders);
     }
@@ -45,18 +43,10 @@ public class OrderController {
         @RequestHeader(value = "Authorization", required = false) String authorization,
         @Valid @RequestBody OrderRequest request
     ) {
-        var member = extractMember(authorization);
+        var member = authenticatedMemberResolver.resolve(authorization);
 
         var response = orderService.createOrder(member, request);
         return ResponseEntity.created(URI.create("/api/orders/" + response.id()))
             .body(response);
-    }
-
-    private Member extractMember(String authorization) {
-        var member = authenticationResolver.extractMember(authorization);
-        if (member == null) {
-            throw new AuthenticationException();
-        }
-        return member;
     }
 }

@@ -1,6 +1,7 @@
 package gift.global;
 
 import gift.category.CategoryNotFoundException;
+import gift.category.CategoryValidationException;
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InsufficientMemberPointException;
@@ -30,6 +31,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CategoryNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleCategoryNotFound(CategoryNotFoundException exception) {
         return error(HttpStatus.NOT_FOUND, "CATEGORY.NOT_FOUND", exception.getMessage());
+    }
+
+    @ExceptionHandler(CategoryValidationException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryValidation(CategoryValidationException exception) {
+        return error(HttpStatus.BAD_REQUEST, "CATEGORY.INVALID", exception.getMessage());
     }
 
     @ExceptionHandler(AuthenticationException.class)

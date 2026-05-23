@@ -8,10 +8,12 @@ import gift.option.exception.OptionValidationException;
 import gift.product.Product;
 import gift.product.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class OptionService {
 
     private final OptionRepository optionRepository;
@@ -30,6 +32,7 @@ public class OptionService {
             .toList();
     }
 
+    @Transactional
     public OptionResponse createOption(Long productId, OptionRequest request) {
         validateName(request.name());
         Product product = findProduct(productId);
@@ -39,6 +42,7 @@ public class OptionService {
         return OptionResponse.from(saved);
     }
 
+    @Transactional
     public void deleteOption(Long productId, Long optionId) {
         findProduct(productId);
         validateCanDelete(productId);

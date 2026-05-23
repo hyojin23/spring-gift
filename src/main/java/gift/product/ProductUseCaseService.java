@@ -3,10 +3,12 @@ package gift.product;
 import gift.category.Category;
 import gift.category.CategoryRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.function.Supplier;
 
 @Service
+@Transactional(readOnly = true)
 public class ProductUseCaseService {
 
     private final ProductRepository productRepository;
@@ -17,6 +19,7 @@ public class ProductUseCaseService {
         this.categoryRepository = categoryRepository;
     }
 
+    @Transactional
     public Product createProduct(
         ProductCommand command,
         Supplier<? extends RuntimeException> categoryNotFoundExceptionSupplier
@@ -25,6 +28,7 @@ public class ProductUseCaseService {
         return productRepository.save(new Product(command.name(), command.price(), command.imageUrl(), category));
     }
 
+    @Transactional
     public Product updateProduct(
         Long id,
         ProductCommand command,

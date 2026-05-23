@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -34,7 +35,6 @@ public class OrderService {
         this.orderNotificationService = orderNotificationService;
     }
 
-    @Transactional(readOnly = true)
     public Page<OrderResponse> getOrders(Long memberId, Pageable pageable) {
         return orderRepository.findByMemberId(memberId, pageable)
             .map(OrderResponse::from);

@@ -5,10 +5,12 @@ import gift.category.CategoryRepository;
 import gift.product.exception.AdminProductCategoryNotFoundException;
 import gift.product.exception.AdminProductNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class AdminProductService {
 
     private final ProductRepository productRepository;
@@ -42,6 +44,7 @@ public class AdminProductService {
         return ProductNameValidator.validate(name, true);
     }
 
+    @Transactional
     public void createProduct(String name, int price, String imageUrl, Long categoryId) {
         productUseCaseService.createProduct(
             new ProductCommand(name, price, imageUrl, categoryId),
@@ -49,6 +52,7 @@ public class AdminProductService {
         );
     }
 
+    @Transactional
     public void updateProduct(Long id, String name, int price, String imageUrl, Long categoryId) {
         productUseCaseService.updateProduct(
             id,
@@ -58,6 +62,7 @@ public class AdminProductService {
         );
     }
 
+    @Transactional
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }

@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
@@ -22,11 +22,13 @@ public class CategoryService {
                 .toList();
     }
 
+    @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
         Category saved = categoryRepository.save(request.toEntity());
         return CategoryResponse.from(saved);
     }
 
+    @Transactional
     public CategoryResponse updateCategory(Category category, CategoryRequest request) {
 
         category.update(request.name(), request.color(), request.imageUrl(), request.description());
@@ -36,6 +38,7 @@ public class CategoryService {
         return CategoryResponse.from(category);
     }
 
+    @Transactional
     public void deleteCategory(Long id) {
         categoryRepository.deleteById(id);
     }

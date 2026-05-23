@@ -8,8 +8,10 @@ import gift.wish.exception.WishProductNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class WishService {
 
     private final WishRepository wishRepository;
@@ -25,6 +27,7 @@ public class WishService {
                 .map(WishResponse::from);
     }
 
+    @Transactional
     public WishAddResult addWish(Long memberId, Long productId) {
 
         Product product = productRepository.findById(productId)
@@ -40,6 +43,7 @@ public class WishService {
         return WishAddResult.created(saved);
     }
 
+    @Transactional
     public void removeWish(Long memberId, Long wishId) {
         var wish = wishRepository.findById(wishId)
             .orElseThrow(WishNotFoundException::new);

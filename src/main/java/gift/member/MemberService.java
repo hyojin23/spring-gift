@@ -5,8 +5,10 @@ import gift.auth.TokenResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InvalidMemberCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class MemberService {
 
     private final MemberRepository memberRepository;
@@ -17,6 +19,7 @@ public class MemberService {
         this.jwtProvider = jwtProvider;
     }
 
+    @Transactional
     public TokenResponse register(MemberRequest request) {
         if (memberRepository.existsByEmail(request.email())) {
             throw new DuplicateMemberEmailException();

@@ -6,10 +6,12 @@ import gift.product.exception.ProductValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 public class ProductService {
 
     private final ProductRepository productRepository;
@@ -32,6 +34,7 @@ public class ProductService {
         return ProductResponse.from(findProduct(id));
     }
 
+    @Transactional
     public ProductResponse createProduct(ProductRequest request) {
         validateName(request.name());
 
@@ -42,6 +45,7 @@ public class ProductService {
         return ProductResponse.from(saved);
     }
 
+    @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         validateName(request.name());
 
@@ -54,6 +58,7 @@ public class ProductService {
         return ProductResponse.from(saved);
     }
 
+    @Transactional
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }

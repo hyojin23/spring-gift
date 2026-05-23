@@ -6,6 +6,7 @@ import gift.option.Option;
 import gift.option.OptionRepository;
 import gift.order.exception.OrderOptionNotFoundException;
 import gift.wish.WishRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,20 +20,20 @@ public class OrderService {
     private final OptionRepository optionRepository;
     private final MemberRepository memberRepository;
     private final WishRepository wishRepository;
-    private final OrderNotificationService orderNotificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public OrderService(
         OrderRepository orderRepository,
         OptionRepository optionRepository,
         MemberRepository memberRepository,
         WishRepository wishRepository,
-        OrderNotificationService orderNotificationService
+        ApplicationEventPublisher eventPublisher
     ) {
         this.orderRepository = orderRepository;
         this.optionRepository = optionRepository;
         this.memberRepository = memberRepository;
         this.wishRepository = wishRepository;
-        this.orderNotificationService = orderNotificationService;
+        this.eventPublisher = eventPublisher;
     }
 
     public Page<OrderResponse> getOrders(Long memberId, Pageable pageable) {
@@ -54,7 +55,7 @@ public class OrderService {
         Order saved = orderRepository.save(new Order(option, member.getId(), request.quantity(), request.message()));
 
         cleanupWish(member.getId(), option);
-        orderNotificationService.sendOrderCreatedMessage(member, saved, option);
+        eventPublisher.publishEvent(new OrderCreatedEvent(member, saved, option));
         return OrderResponse.from(saved);
     }
 

@@ -13,6 +13,8 @@ import gift.wish.Wish;
 import gift.wish.WishRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -26,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class OrderServiceTest {
@@ -34,13 +37,13 @@ class OrderServiceTest {
     private final OptionRepository optionRepository = mock(OptionRepository.class);
     private final MemberRepository memberRepository = mock(MemberRepository.class);
     private final WishRepository wishRepository = mock(WishRepository.class);
-    private final OrderNotificationService orderNotificationService = mock(OrderNotificationService.class);
+    private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
     private final OrderService orderService = new OrderService(
         orderRepository,
         optionRepository,
         memberRepository,
         wishRepository,
-        orderNotificationService
+        eventPublisher
     );
 
     @Test
@@ -79,7 +82,11 @@ class OrderServiceTest {
         verify(optionRepository).save(option);
         verify(memberRepository).save(member);
         verify(wishRepository).delete(wish);
-        verify(orderNotificationService).sendOrderCreatedMessage(member, saved, option);
+        ArgumentCaptor<OrderCreatedEvent> eventCaptor = ArgumentCaptor.forClass(OrderCreatedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        assertThat(eventCaptor.getValue().member()).isEqualTo(member);
+        assertThat(eventCaptor.getValue().order()).isEqualTo(saved);
+        assertThat(eventCaptor.getValue().option()).isEqualTo(option);
     }
 
     @Test
@@ -99,7 +106,7 @@ class OrderServiceTest {
 
         assertThat(response.optionId()).isEqualTo(1L);
         verify(wishRepository, never()).delete(any());
-        verify(orderNotificationService).sendOrderCreatedMessage(member, saved, option);
+        verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
     }
 
     @Test
@@ -118,6 +125,7 @@ class OrderServiceTest {
         verify(orderRepository, never()).save(any());
         verify(wishRepository, never()).findByMemberIdAndProductId(any(), any());
         verify(wishRepository, never()).delete(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -135,6 +143,7 @@ class OrderServiceTest {
         verify(wishRepository, never()).findByMemberIdAndProductId(any(), any());
         verify(wishRepository, never()).delete(any());
         verify(orderRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -152,6 +161,7 @@ class OrderServiceTest {
         verify(wishRepository, never()).findByMemberIdAndProductId(any(), any());
         verify(wishRepository, never()).delete(any());
         verify(orderRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     private Member member() {

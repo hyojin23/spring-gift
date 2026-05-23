@@ -14,4 +14,8 @@ public record ProductRequest(
     public Product toEntity(Category category) {
         return new Product(name, price, imageUrl, category);
     }
+
+    public ProductCommand toCommand() {
+        return new ProductCommand(name, price, imageUrl, categoryId);
+    }
 }

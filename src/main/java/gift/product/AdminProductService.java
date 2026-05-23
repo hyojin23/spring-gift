@@ -13,10 +13,16 @@ public class AdminProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductUseCaseService productUseCaseService;
 
-    public AdminProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public AdminProductService(
+        ProductRepository productRepository,
+        CategoryRepository categoryRepository,
+        ProductUseCaseService productUseCaseService
+    ) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.productUseCaseService = productUseCaseService;
     }
 
     public List<Product> getProducts() {
@@ -37,24 +43,23 @@ public class AdminProductService {
     }
 
     public void createProduct(String name, int price, String imageUrl, Long categoryId) {
-        Category category = getCategory(categoryId);
-        productRepository.save(new Product(name, price, imageUrl, category));
+        productUseCaseService.createProduct(
+            new ProductCommand(name, price, imageUrl, categoryId),
+            () -> new AdminProductCategoryNotFoundException(categoryId)
+        );
     }
 
     public void updateProduct(Long id, String name, int price, String imageUrl, Long categoryId) {
-        Product product = getProduct(id);
-        Category category = getCategory(categoryId);
-
-        product.update(name, price, imageUrl, category);
-        productRepository.save(product);
+        productUseCaseService.updateProduct(
+            id,
+            new ProductCommand(name, price, imageUrl, categoryId),
+            () -> new AdminProductNotFoundException(id),
+            () -> new AdminProductCategoryNotFoundException(categoryId)
+        );
     }
 
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
 
-    private Category getCategory(Long id) {
-        return categoryRepository.findById(id)
-            .orElseThrow(() -> new AdminProductCategoryNotFoundException(id));
-    }
 }

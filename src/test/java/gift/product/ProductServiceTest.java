@@ -19,7 +19,14 @@ class ProductServiceTest {
 
     private final ProductRepository productRepository = mock(ProductRepository.class);
     private final CategoryRepository categoryRepository = mock(CategoryRepository.class);
-    private final ProductService productService = new ProductService(productRepository, categoryRepository);
+    private final ProductUseCaseService productUseCaseService = new ProductUseCaseService(
+        productRepository,
+        categoryRepository
+    );
+    private final ProductService productService = new ProductService(
+        productRepository,
+        productUseCaseService
+    );
 
     @Test
     @DisplayName("상품을 찾지 못하면 상품 미존재 예외를 던진다")

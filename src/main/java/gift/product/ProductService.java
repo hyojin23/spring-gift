@@ -1,7 +1,5 @@
 package gift.product;
 
-import gift.category.Category;
-import gift.category.CategoryRepository;
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
@@ -15,11 +13,14 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+    private final ProductUseCaseService productUseCaseService;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductService(
+        ProductRepository productRepository,
+        ProductUseCaseService productUseCaseService
+    ) {
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
+        this.productUseCaseService = productUseCaseService;
     }
 
     public Page<ProductResponse> getProducts(Pageable pageable) {
@@ -33,19 +34,23 @@ public class ProductService {
 
     public ProductResponse createProduct(ProductRequest request) {
         validateName(request.name());
-        Category category = findCategory(request.categoryId());
 
-        Product saved = productRepository.save(request.toEntity(category));
+        Product saved = productUseCaseService.createProduct(
+            request.toCommand(),
+            ProductCategoryNotFoundException::new
+        );
         return ProductResponse.from(saved);
     }
 
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         validateName(request.name());
-        Category category = findCategory(request.categoryId());
-        Product product = findProduct(id);
 
-        product.update(request.name(), request.price(), request.imageUrl(), category);
-        Product saved = productRepository.save(product);
+        Product saved = productUseCaseService.updateProduct(
+            id,
+            request.toCommand(),
+            ProductNotFoundException::new,
+            ProductCategoryNotFoundException::new
+        );
         return ProductResponse.from(saved);
     }
 
@@ -56,11 +61,6 @@ public class ProductService {
     private Product findProduct(Long id) {
         return productRepository.findById(id)
             .orElseThrow(ProductNotFoundException::new);
-    }
-
-    private Category findCategory(Long id) {
-        return categoryRepository.findById(id)
-            .orElseThrow(ProductCategoryNotFoundException::new);
     }
 
     private void validateName(String name) {

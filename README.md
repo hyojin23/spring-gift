@@ -25,6 +25,9 @@
 
 ### SDD 문서 구조
 
+spec-kit 관련 문서는 생성 파일이 많기 때문에, 리뷰 시에는 먼저 [`specs/README.md`](specs/README.md)와 [`.specify/README.md`](.specify/README.md)를 참고해 주세요.
+두 문서에는 사람이 우선 확인할 리뷰 문서와 AI/도구 보조용 문서의 구분 기준을 정리했습니다.
+
 리팩토링 작업은 `specs/` 디렉터리 아래에 주제별로 분리해 관리했습니다.
 
 예시:

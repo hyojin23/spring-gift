@@ -33,19 +33,19 @@ public class WishService {
         Product product = productRepository.findById(productId)
             .orElseThrow(WishProductNotFoundException::new);
 
-        var existing = wishRepository.findByMemberIdAndProductId(memberId, product.getId()).orElse(null);
+        Wish existing = wishRepository.findByMemberIdAndProductId(memberId, product.getId()).orElse(null);
 
         if (existing != null) {
             return WishAddResult.existing(existing);
         }
 
-        var saved = wishRepository.save(new Wish(memberId, product));
+        Wish saved = wishRepository.save(new Wish(memberId, product));
         return WishAddResult.created(saved);
     }
 
     @Transactional
     public void removeWish(Long memberId, Long wishId) {
-        var wish = wishRepository.findById(wishId)
+        Wish wish = wishRepository.findById(wishId)
             .orElseThrow(WishNotFoundException::new);
 
         if (!wish.getMemberId().equals(memberId)) {

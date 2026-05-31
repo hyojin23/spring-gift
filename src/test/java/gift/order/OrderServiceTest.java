@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -54,7 +55,7 @@ class OrderServiceTest {
         when(orderRepository.findByMemberId(1L, PageRequest.of(0, 10)))
             .thenReturn(new PageImpl<>(List.of(order)));
 
-        var result = orderService.getOrders(1L, PageRequest.of(0, 10));
+        Page<OrderResponse> result = orderService.getOrders(1L, PageRequest.of(0, 10));
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().getFirst().optionId()).isEqualTo(1L);

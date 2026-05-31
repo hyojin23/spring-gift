@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 public class KakaoMessageTemplateBuilder {
 
     public String build(Order order, Product product) {
-        var totalPrice = String.format("%,d", product.getPrice() * order.getQuantity());
-        var message = order.getMessage() != null && !order.getMessage().isBlank()
+        String totalPrice = String.format("%,d", product.getPrice() * order.getQuantity());
+        String message = order.getMessage() != null && !order.getMessage().isBlank()
             ? "\\n\\n💌 " + order.getMessage()
             : "";
         return """

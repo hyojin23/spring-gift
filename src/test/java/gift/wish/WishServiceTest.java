@@ -42,7 +42,7 @@ class WishServiceTest {
     @Test
     @DisplayName("다른 사용자의 위시를 삭제하려 하면 권한 예외를 던진다")
     void removeWishForbidden() {
-        var wish = new Wish(2L, product());
+        Wish wish = new Wish(2L, product());
         when(wishRepository.findById(1L)).thenReturn(Optional.of(wish));
 
         assertThatThrownBy(() -> wishService.removeWish(1L, 1L))

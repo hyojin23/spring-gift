@@ -28,7 +28,7 @@ public class OrderController {
         @Authenticated Member member,
         Pageable pageable
     ) {
-        var orders = orderService.getOrders(member.getId(), pageable);
+        Page<OrderResponse> orders = orderService.getOrders(member.getId(), pageable);
         return ResponseEntity.ok(orders);
     }
 
@@ -37,7 +37,7 @@ public class OrderController {
         @Authenticated Member member,
         @Valid @RequestBody OrderRequest request
     ) {
-        var response = orderService.createOrder(member, request);
+        OrderResponse response = orderService.createOrder(member, request);
         return ResponseEntity.created(URI.create("/api/orders/" + response.id()))
             .body(response);
     }

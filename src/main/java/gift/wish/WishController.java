@@ -30,7 +30,7 @@ public class WishController {
         @Authenticated Member member,
         Pageable pageable
     ) {
-        var wishes = wishService.getWishes(member.getId(), pageable);
+        Page<WishResponse> wishes = wishService.getWishes(member.getId(), pageable);
         return ResponseEntity.ok(wishes);
     }
 
@@ -39,7 +39,7 @@ public class WishController {
         @Authenticated Member member,
         @Valid @RequestBody WishRequest request
     ) {
-        var result = wishService.addWish(member.getId(), request.productId());
+        WishAddResult result = wishService.addWish(member.getId(), request.productId());
 
         if (!result.created()) {
             return ResponseEntity.ok(result.response());

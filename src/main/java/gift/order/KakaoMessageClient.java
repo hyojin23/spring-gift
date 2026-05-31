@@ -16,9 +16,9 @@ public class KakaoMessageClient {
     }
 
     public void sendToMe(String accessToken, Order order, Product product) {
-        var templateObject = templateBuilder.build(order, product);
+        String templateObject = templateBuilder.build(order, product);
 
-        var params = new LinkedMultiValueMap<String, String>();
+        LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("template_object", templateObject);
 
         restClient.post()

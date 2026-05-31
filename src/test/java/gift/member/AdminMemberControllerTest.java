@@ -40,10 +40,10 @@ class AdminMemberControllerTest {
     @DisplayName("관리자 회원 목록 화면은 flash 오류 메시지를 표시할 수 있다")
     void listWithError() throws Exception {
         mockMvc.perform(get("/admin/members")
-                .flashAttr("error", "회원이 존재하지 않습니다. id=999999"))
+                .flashAttr("error", "존재하지 않는 회원입니다."))
             .andExpect(status().isOk())
             .andExpect(view().name("member/list"))
-            .andExpect(model().attribute("error", "회원이 존재하지 않습니다. id=999999"))
+            .andExpect(model().attribute("error", "존재하지 않는 회원입니다."))
             .andExpect(model().attributeExists("members"));
     }
 
@@ -92,7 +92,7 @@ class AdminMemberControllerTest {
         mockMvc.perform(get("/admin/members/999999/edit"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/admin/members"))
-            .andExpect(flash().attribute("error", "회원이 존재하지 않습니다. id=999999"));
+            .andExpect(flash().attribute("error", "존재하지 않는 회원입니다."));
     }
 
     @Test
@@ -113,7 +113,7 @@ class AdminMemberControllerTest {
                 .param("password", "updated-password"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/admin/members"))
-            .andExpect(flash().attribute("error", "회원이 존재하지 않습니다. id=999999"));
+            .andExpect(flash().attribute("error", "존재하지 않는 회원입니다."));
     }
 
     @Test
@@ -132,7 +132,7 @@ class AdminMemberControllerTest {
                 .param("amount", "1000"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/admin/members"))
-            .andExpect(flash().attribute("error", "회원이 존재하지 않습니다. id=999999"));
+            .andExpect(flash().attribute("error", "존재하지 않는 회원입니다."));
     }
 
     @Test

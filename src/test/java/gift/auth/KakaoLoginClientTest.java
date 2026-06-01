@@ -30,7 +30,10 @@ class KakaoLoginClientTest {
     private final KakaoLoginProperties properties = new KakaoLoginProperties(
         "kakao-client-id",
         "kakao-client-secret",
-        "http://localhost:8080/api/auth/kakao/callback"
+        "http://localhost:8080/api/auth/kakao/callback",
+        "https://kauth.kakao.com/oauth/authorize",
+        TOKEN_URI,
+        USER_INFO_URI
     );
     private final RestClient.Builder builder = RestClient.builder();
     private final MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();

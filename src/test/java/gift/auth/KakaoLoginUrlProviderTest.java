@@ -13,7 +13,10 @@ class KakaoLoginUrlProviderTest {
         KakaoLoginProperties properties = new KakaoLoginProperties(
             "kakao-client-id",
             "kakao-client-secret",
-            "http://localhost:8080/api/auth/kakao/callback"
+            "http://localhost:8080/api/auth/kakao/callback",
+            "https://kauth.kakao.com/oauth/authorize",
+            "https://kauth.kakao.com/oauth/token",
+            "https://kapi.kakao.com/v2/user/me"
         );
         KakaoLoginUrlProvider provider = new KakaoLoginUrlProvider(properties);
 

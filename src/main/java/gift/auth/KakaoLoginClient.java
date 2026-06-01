@@ -13,8 +13,6 @@ import org.springframework.web.client.RestClientException;
 
 @Component
 public class KakaoLoginClient {
-    private static final String KAKAO_TOKEN_URI = "https://kauth.kakao.com/oauth/token";
-    private static final String KAKAO_USER_INFO_URI = "https://kapi.kakao.com/v2/user/me";
     private static final String AUTHORIZATION_CODE = "authorization_code";
     private static final String BEARER_PREFIX = "Bearer ";
 
@@ -29,7 +27,7 @@ public class KakaoLoginClient {
     public KakaoTokenResponse requestAccessToken(String code) {
         try {
             KakaoTokenResponse response = restClient.post()
-                .uri(KAKAO_TOKEN_URI)
+                .uri(properties.tokenUri())
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(createAccessTokenRequestParams(code))
                 .retrieve()
@@ -43,7 +41,7 @@ public class KakaoLoginClient {
     public KakaoUserResponse requestUserInfo(String accessToken) {
         try {
             KakaoUserResponse response = restClient.get()
-                .uri(KAKAO_USER_INFO_URI)
+                .uri(properties.userInfoUri())
                 .header(HttpHeaders.AUTHORIZATION, bearerToken(accessToken))
                 .retrieve()
                 .body(KakaoUserResponse.class);

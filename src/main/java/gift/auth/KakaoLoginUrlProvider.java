@@ -5,7 +5,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class KakaoLoginUrlProvider {
-    private static final String KAKAO_AUTHORIZATION_URI = "https://kauth.kakao.com/oauth/authorize";
     private static final String RESPONSE_TYPE_CODE = "code";
     private static final String SCOPE = "account_email,talk_message";
 
@@ -16,7 +15,7 @@ public class KakaoLoginUrlProvider {
     }
 
     public String createLoginUrl() {
-        return UriComponentsBuilder.fromUriString(KAKAO_AUTHORIZATION_URI)
+        return UriComponentsBuilder.fromUriString(properties.authorizationUri())
             .queryParam("response_type", RESPONSE_TYPE_CODE)
             .queryParam("client_id", properties.clientId())
             .queryParam("redirect_uri", properties.redirectUri())

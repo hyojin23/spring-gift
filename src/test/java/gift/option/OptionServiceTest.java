@@ -48,6 +48,9 @@ class OptionServiceTest {
     @Test
     @DisplayName("옵션명 검증에 실패하면 옵션명 검증 예외를 던진다")
     void createOptionInvalidName() {
+        Product product = product(1L);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
         assertThatThrownBy(() -> optionService.createOption(1L, new OptionRequest("블랙@", 10)))
             .isInstanceOf(OptionValidationException.class);
     }

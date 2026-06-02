@@ -4,7 +4,6 @@ import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
-import gift.option.exception.OptionValidationException;
 import gift.product.Product;
 import gift.product.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,6 @@ public class OptionService {
 
     @Transactional
     public OptionResponse createOption(Long productId, OptionRequest request) {
-        validateName(request.name());
         Product product = findProduct(productId);
         validateDuplicateName(productId, request.name());
 
@@ -56,13 +54,6 @@ public class OptionService {
     private Product findProduct(Long productId) {
         return productRepository.findById(productId)
             .orElseThrow(OptionProductNotFoundException::new);
-    }
-
-    private void validateName(String name) {
-        List<String> errors = OptionNameValidator.validate(name);
-        if (!errors.isEmpty()) {
-            throw new OptionValidationException(String.join(", ", errors));
-        }
     }
 
     private void validateDuplicateName(Long productId, String name) {

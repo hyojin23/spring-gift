@@ -1,6 +1,7 @@
 package gift.option;
 
 import gift.option.exception.OptionQuantityException;
+import gift.option.exception.OptionValidationException;
 import gift.product.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,6 +11,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
+import java.util.List;
 
 @Entity
 @Table(name = "options")
@@ -35,6 +38,7 @@ public class Option {
     }
 
     public Option(Product product, String name, int quantity) {
+        validateName(name);
         validateQuantity(quantity);
         this.product = product;
         this.name = name;
@@ -52,6 +56,13 @@ public class Option {
     private void validateQuantity(int quantity) {
         if (quantity < MIN_QUANTITY || quantity > MAX_QUANTITY) {
             throw new OptionQuantityException("옵션 수량은 1 이상 99,999,999 이하이어야 합니다.");
+        }
+    }
+
+    private void validateName(String name) {
+        List<String> errors = OptionNameValidator.validate(name);
+        if (!errors.isEmpty()) {
+            throw new OptionValidationException(String.join(", ", errors));
         }
     }
 

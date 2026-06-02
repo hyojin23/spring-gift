@@ -2,13 +2,10 @@ package gift.product;
 
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductNotFoundException;
-import gift.product.exception.ProductValidationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -36,8 +33,6 @@ public class ProductService {
 
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
-        validateName(request.name());
-
         Product saved = productUseCaseService.createProduct(
             request.toCommand(),
             ProductCategoryNotFoundException::new
@@ -47,8 +42,6 @@ public class ProductService {
 
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-        validateName(request.name());
-
         Product saved = productUseCaseService.updateProduct(
             id,
             request.toCommand(),
@@ -66,12 +59,5 @@ public class ProductService {
     private Product findProduct(Long id) {
         return productRepository.findById(id)
             .orElseThrow(ProductNotFoundException::new);
-    }
-
-    private void validateName(String name) {
-        List<String> errors = ProductNameValidator.validate(name);
-        if (!errors.isEmpty()) {
-            throw new ProductValidationException(String.join(", ", errors));
-        }
     }
 }

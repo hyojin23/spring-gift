@@ -25,7 +25,9 @@ public class ProductUseCaseService {
         Supplier<? extends RuntimeException> categoryNotFoundExceptionSupplier
     ) {
         Category category = findCategory(command.categoryId(), categoryNotFoundExceptionSupplier);
-        return productRepository.save(new Product(command.name(), command.price(), command.imageUrl(), category));
+        return productRepository.save(
+            new Product(command.name(), command.price(), command.imageUrl(), category, command.allowKakaoName())
+        );
     }
 
     @Transactional
@@ -38,7 +40,7 @@ public class ProductUseCaseService {
         Product product = findProduct(id, productNotFoundExceptionSupplier);
         Category category = findCategory(command.categoryId(), categoryNotFoundExceptionSupplier);
 
-        product.update(command.name(), command.price(), command.imageUrl(), category);
+        product.update(command.name(), command.price(), command.imageUrl(), category, command.allowKakaoName());
         return productRepository.save(product);
     }
 

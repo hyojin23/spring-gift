@@ -50,7 +50,9 @@ class ProductServiceTest {
     @Test
     @DisplayName("상품명 검증에 실패하면 상품 검증 예외를 던진다")
     void createProductInvalidName() {
+        Category category = category(1L);
         ProductRequest request = new ProductRequest("카카오 상품", 1000, "https://example.com/product.jpg", 1L);
+        when(categoryRepository.findById(1L)).thenReturn(Optional.of(category));
 
         assertThatThrownBy(() -> productService.createProduct(request))
             .isInstanceOf(ProductValidationException.class);

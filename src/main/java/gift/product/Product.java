@@ -35,7 +35,11 @@ public class Product {
     }
 
     public Product(String name, int price, String imageUrl, Category category) {
-        validate(name, price, imageUrl, category);
+        this(name, price, imageUrl, category, false);
+    }
+
+    public Product(String name, int price, String imageUrl, Category category, boolean allowKakaoName) {
+        validate(name, price, imageUrl, category, allowKakaoName);
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
@@ -43,17 +47,19 @@ public class Product {
     }
 
     public void update(String name, int price, String imageUrl, Category category) {
-        validate(name, price, imageUrl, category);
+        update(name, price, imageUrl, category, false);
+    }
+
+    public void update(String name, int price, String imageUrl, Category category, boolean allowKakaoName) {
+        validate(name, price, imageUrl, category, allowKakaoName);
         this.name = name;
         this.price = price;
         this.imageUrl = imageUrl;
         this.category = category;
     }
 
-    private void validate(String name, int price, String imageUrl, Category category) {
-        if (name == null || name.isBlank()) {
-            throw new ProductValidationException("상품 이름은 필수입니다.");
-        }
+    private void validate(String name, int price, String imageUrl, Category category, boolean allowKakaoName) {
+        validateName(name, allowKakaoName);
         if (price <= 0) {
             throw new ProductValidationException("상품 가격은 0보다 커야 합니다.");
         }
@@ -62,6 +68,13 @@ public class Product {
         }
         if (category == null) {
             throw new ProductValidationException("상품 카테고리는 필수입니다.");
+        }
+    }
+
+    private void validateName(String name, boolean allowKakaoName) {
+        List<String> errors = ProductNameValidator.validate(name, allowKakaoName);
+        if (!errors.isEmpty()) {
+            throw new ProductValidationException(String.join(", ", errors));
         }
     }
 

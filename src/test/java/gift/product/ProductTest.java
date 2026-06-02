@@ -21,6 +21,15 @@ class ProductTest {
     }
 
     @Test
+    @DisplayName("상품명에 허용되지 않는 문자가 있으면 상품을 생성할 수 없다")
+    void createInvalidName() {
+        Category category = category();
+
+        assertThatThrownBy(() -> new Product("상품@", 1000, "https://example.com/product.jpg", category))
+            .isInstanceOf(ProductValidationException.class);
+    }
+
+    @Test
     @DisplayName("가격이 0 이하이면 상품을 생성할 수 없다")
     void createNonPositivePrice() {
         Category category = category();

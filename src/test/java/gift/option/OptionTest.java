@@ -2,6 +2,7 @@ package gift.option;
 
 import gift.category.Category;
 import gift.option.exception.OptionQuantityException;
+import gift.option.exception.OptionValidationException;
 import gift.product.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class OptionTest {
+
+    @Test
+    @DisplayName("옵션명에 허용되지 않는 문자가 있으면 옵션을 생성할 수 없다")
+    void createWithInvalidName() {
+        Product product = product();
+
+        assertThatThrownBy(() -> new Option(product, "옵션@", 10))
+            .isInstanceOf(OptionValidationException.class);
+    }
 
     @Test
     @DisplayName("수량이 0 이하이면 옵션을 생성할 수 없다")

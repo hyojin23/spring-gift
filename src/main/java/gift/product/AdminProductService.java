@@ -47,7 +47,7 @@ public class AdminProductService {
     @Transactional
     public void createProduct(String name, int price, String imageUrl, Long categoryId) {
         productUseCaseService.createProduct(
-            new ProductCommand(name, price, imageUrl, categoryId),
+            new ProductCommand(name, price, imageUrl, categoryId, true),
             () -> new AdminProductCategoryNotFoundException(categoryId)
         );
     }
@@ -56,7 +56,7 @@ public class AdminProductService {
     public void updateProduct(Long id, String name, int price, String imageUrl, Long categoryId) {
         productUseCaseService.updateProduct(
             id,
-            new ProductCommand(name, price, imageUrl, categoryId),
+            new ProductCommand(name, price, imageUrl, categoryId, true),
             () -> new AdminProductNotFoundException(id),
             () -> new AdminProductCategoryNotFoundException(categoryId)
         );

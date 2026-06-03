@@ -2,7 +2,8 @@ package gift.order;
 
 import gift.category.Category;
 import gift.option.Option;
-import gift.order.exception.OrderValidationException;
+import gift.order.exception.OrderErrorCode;
+import gift.order.exception.OrderException;
 import gift.product.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,32 +41,40 @@ class OrderTest {
     @DisplayName("옵션이 없으면 주문을 생성할 수 없다")
     void createOrderWithoutOption() {
         assertThatThrownBy(() -> new Order(null, 1L, 1, "선물 메시지"))
-            .isInstanceOf(OrderValidationException.class)
-            .hasMessage("주문 옵션은 필수입니다.");
+            .isInstanceOf(OrderException.class)
+            .hasMessage("주문 옵션은 필수입니다.")
+            .extracting("errorCode")
+            .isEqualTo(OrderErrorCode.OPTION_REQUIRED);
     }
 
     @Test
     @DisplayName("회원 ID가 없으면 주문을 생성할 수 없다")
     void createOrderWithoutMemberId() {
         assertThatThrownBy(() -> new Order(option(), null, 1, "선물 메시지"))
-            .isInstanceOf(OrderValidationException.class)
-            .hasMessage("주문 회원 ID는 필수입니다.");
+            .isInstanceOf(OrderException.class)
+            .hasMessage("주문 회원 ID는 필수입니다.")
+            .extracting("errorCode")
+            .isEqualTo(OrderErrorCode.MEMBER_ID_REQUIRED);
     }
 
     @Test
     @DisplayName("주문 수량이 0이면 주문을 생성할 수 없다")
     void createOrderWithZeroQuantity() {
         assertThatThrownBy(() -> new Order(option(), 1L, 0, "선물 메시지"))
-            .isInstanceOf(OrderValidationException.class)
-            .hasMessage("주문 수량은 1 이상이어야 합니다.");
+            .isInstanceOf(OrderException.class)
+            .hasMessage("주문 수량은 1 이상이어야 합니다.")
+            .extracting("errorCode")
+            .isEqualTo(OrderErrorCode.INVALID_QUANTITY);
     }
 
     @Test
     @DisplayName("주문 수량이 음수이면 주문을 생성할 수 없다")
     void createOrderWithNegativeQuantity() {
         assertThatThrownBy(() -> new Order(option(), 1L, -1, "선물 메시지"))
-            .isInstanceOf(OrderValidationException.class)
-            .hasMessage("주문 수량은 1 이상이어야 합니다.");
+            .isInstanceOf(OrderException.class)
+            .hasMessage("주문 수량은 1 이상이어야 합니다.")
+            .extracting("errorCode")
+            .isEqualTo(OrderErrorCode.INVALID_QUANTITY);
     }
 
     private Option option() {

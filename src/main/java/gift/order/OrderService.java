@@ -5,7 +5,8 @@ import gift.member.MemberService;
 import gift.option.Option;
 import gift.option.OptionService;
 import gift.option.exception.OptionNotFoundException;
-import gift.order.exception.OrderOptionNotFoundException;
+import gift.order.exception.OrderErrorCode;
+import gift.order.exception.OrderException;
 import gift.wish.WishService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -59,7 +60,7 @@ public class OrderService {
         try {
             return optionService.decreaseQuantityForOrder(request.optionId(), request.quantity());
         } catch (OptionNotFoundException exception) {
-            throw new OrderOptionNotFoundException(request.optionId());
+            throw new OrderException(OrderErrorCode.OPTION_NOT_FOUND, request.optionId());
         }
     }
 

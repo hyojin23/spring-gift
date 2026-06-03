@@ -124,7 +124,7 @@ class OrderControllerTest {
                     """))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("ORDER.OPTION_NOT_FOUND"))
-            .andExpect(jsonPath("$.message").value("주문할 옵션을 찾을 수 없습니다. optionId=999999"));
+            .andExpect(jsonPath("$.message").value("주문 옵션을 찾을 수 없습니다. optionId=999999"));
     }
 
     @Test

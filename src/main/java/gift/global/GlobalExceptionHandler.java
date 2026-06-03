@@ -12,8 +12,7 @@ import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
-import gift.order.exception.OrderOptionNotFoundException;
-import gift.order.exception.OrderValidationException;
+import gift.order.exception.OrderException;
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
@@ -110,14 +109,13 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.BAD_REQUEST, "OPTION.INVALID_QUANTITY", exception.getMessage());
     }
 
-    @ExceptionHandler(OrderOptionNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleOrderOptionNotFound(OrderOptionNotFoundException exception) {
-        return error(HttpStatus.NOT_FOUND, "ORDER.OPTION_NOT_FOUND", exception.getMessage());
-    }
-
-    @ExceptionHandler(OrderValidationException.class)
-    public ResponseEntity<ErrorResponse> handleOrderValidation(OrderValidationException exception) {
-        return error(HttpStatus.BAD_REQUEST, "ORDER.INVALID", exception.getMessage());
+    @ExceptionHandler(OrderException.class)
+    public ResponseEntity<ErrorResponse> handleOrder(OrderException exception) {
+        return error(
+            exception.getErrorCode().getStatus(),
+            exception.getErrorCode().getCode(),
+            exception.getMessage()
+        );
     }
 
     @ExceptionHandler(ProductNotFoundException.class)

@@ -8,7 +8,8 @@ import gift.option.Option;
 import gift.option.OptionService;
 import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionQuantityException;
-import gift.order.exception.OrderOptionNotFoundException;
+import gift.order.exception.OrderErrorCode;
+import gift.order.exception.OrderException;
 import gift.product.Product;
 import gift.wish.WishService;
 import org.junit.jupiter.api.DisplayName;
@@ -98,7 +99,9 @@ class OrderServiceTest {
         when(optionService.decreaseQuantityForOrder(999999L, 1)).thenThrow(new OptionNotFoundException());
 
         assertThatThrownBy(() -> orderService.createOrder(member, request))
-            .isInstanceOf(OrderOptionNotFoundException.class);
+            .isInstanceOf(OrderException.class)
+            .extracting("errorCode")
+            .isEqualTo(OrderErrorCode.OPTION_NOT_FOUND);
 
         verifyNoInteractions(memberService);
         verifyNoInteractions(orderRepository);

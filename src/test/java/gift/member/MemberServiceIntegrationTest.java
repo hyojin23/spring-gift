@@ -25,6 +25,20 @@ class MemberServiceIntegrationTest {
     private MemberRepository memberRepository;
 
     @Test
+    @DisplayName("회원가입 시 비밀번호를 인코딩해서 저장한다")
+    void registerEncodesPassword() {
+        String email = "encoded-" + UUID.randomUUID() + "@example.com";
+
+        memberService.register(new MemberRequest(email, "password"));
+
+        Member member = memberRepository.findByEmail(email).orElseThrow();
+        assertThat(member.getPassword()).isNotEqualTo("password");
+        Member authenticated = memberService.authenticate(new MemberRequest(email, "password"));
+        assertThat(authenticated.getEmail()).isEqualTo(email);
+        assertThat(authenticated.getPassword()).isEqualTo(member.getPassword());
+    }
+
+    @Test
     @DisplayName("같은 이메일로 동시에 회원가입하면 한 명만 저장된다")
     void registerSameEmailConcurrently() throws InterruptedException {
         String email = "duplicate-" + UUID.randomUUID() + "@example.com";

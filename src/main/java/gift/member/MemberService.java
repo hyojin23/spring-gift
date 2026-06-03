@@ -2,6 +2,7 @@ package gift.member;
 
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InvalidMemberCredentialsException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +22,11 @@ public class MemberService {
             throw new DuplicateMemberEmailException();
         }
 
-        return memberRepository.save(new Member(request.email(), request.password()));
+        try {
+            return memberRepository.saveAndFlush(new Member(request.email(), request.password()));
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateMemberEmailException();
+        }
     }
 
     public Member authenticate(MemberRequest request) {

@@ -17,7 +17,7 @@ import gift.order.exception.OrderValidationException;
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
-import gift.wish.exception.AuthenticationException;
+import gift.auth.exception.AuthenticationException;
 import gift.wish.exception.UnauthorizedWishAccessException;
 import gift.wish.exception.WishNotFoundException;
 import gift.wish.exception.WishProductNotFoundException;

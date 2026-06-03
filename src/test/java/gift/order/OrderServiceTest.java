@@ -70,7 +70,7 @@ class OrderServiceTest {
         Wish wish = new Wish(member.getId(), option.getProduct());
         OrderRequest request = new OrderRequest(1L, 2, "선물 메시지");
         Order saved = order(option, 1L, 2);
-        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
+        when(optionRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(option));
         when(orderRepository.save(any(Order.class))).thenReturn(saved);
         when(wishRepository.findByMemberIdAndProductId(member.getId(), option.getProduct().getId()))
             .thenReturn(Optional.of(wish));
@@ -98,7 +98,7 @@ class OrderServiceTest {
         Option option = option();
         OrderRequest request = new OrderRequest(1L, 2, "선물 메시지");
         Order saved = order(option, 1L, 2);
-        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
+        when(optionRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(option));
         when(orderRepository.save(any(Order.class))).thenReturn(saved);
         when(wishRepository.findByMemberIdAndProductId(member.getId(), option.getProduct().getId()))
             .thenReturn(Optional.empty());
@@ -115,7 +115,7 @@ class OrderServiceTest {
     void createOrderOptionNotFound() {
         Member member = member();
         OrderRequest request = new OrderRequest(999999L, 1, "선물 메시지");
-        when(optionRepository.findById(999999L)).thenReturn(Optional.empty());
+        when(optionRepository.findByIdForUpdate(999999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> orderService.createOrder(member, request))
             .isInstanceOf(OrderOptionNotFoundException.class)
@@ -136,7 +136,7 @@ class OrderServiceTest {
         member.chargePoint(10_000);
         Option option = option();
         OrderRequest request = new OrderRequest(1L, 11, "선물 메시지");
-        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
+        when(optionRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(option));
 
         assertThatThrownBy(() -> orderService.createOrder(member, request))
             .isInstanceOf(OptionQuantityException.class);
@@ -154,7 +154,7 @@ class OrderServiceTest {
         member.chargePoint(1_000);
         Option option = option();
         OrderRequest request = new OrderRequest(1L, 2, "선물 메시지");
-        when(optionRepository.findById(1L)).thenReturn(Optional.of(option));
+        when(optionRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(option));
 
         assertThatThrownBy(() -> orderService.createOrder(member, request))
             .isInstanceOf(InsufficientMemberPointException.class);

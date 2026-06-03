@@ -43,7 +43,7 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(Member member, OrderRequest request) {
-        Option option = optionRepository.findById(request.optionId())
+        Option option = optionRepository.findByIdForUpdate(request.optionId())
             .orElseThrow(() -> new OrderOptionNotFoundException(request.optionId()));
         option.subtractQuantity(request.quantity());
         optionRepository.save(option);

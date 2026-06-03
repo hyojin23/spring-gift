@@ -10,6 +10,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class MemberServiceTest {
@@ -72,5 +73,17 @@ class MemberServiceTest {
 
         assertThatThrownBy(() -> memberService.authenticate(request))
             .isInstanceOf(InvalidMemberCredentialsException.class);
+    }
+
+    @Test
+    @DisplayName("주문 시 회원 포인트를 차감한다")
+    void deductPointForOrder() {
+        Member member = new Member("member@example.com", "password");
+        member.chargePoint(10_000);
+
+        memberService.deductPointForOrder(member, 2_000);
+
+        assertThat(member.getPoint()).isEqualTo(8_000);
+        verify(memberRepository).save(member);
     }
 }

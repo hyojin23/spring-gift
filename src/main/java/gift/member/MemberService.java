@@ -34,4 +34,10 @@ public class MemberService {
 
         return member;
     }
+
+    @Transactional
+    public void deductPointForOrder(Member member, int amount) {
+        member.deductPoint(amount);
+        memberRepository.save(member);
+    }
 }

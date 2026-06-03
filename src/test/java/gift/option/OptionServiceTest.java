@@ -4,6 +4,7 @@ import gift.category.Category;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
+import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionValidationException;
 import gift.product.Product;
@@ -102,6 +103,39 @@ class OptionServiceTest {
 
         assertThatThrownBy(() -> optionService.deleteOption(3L, 5L))
             .isInstanceOf(OptionDeletionNotAllowedException.class);
+    }
+
+    @Test
+    @DisplayName("주문 시 옵션 재고를 차감한다")
+    void decreaseQuantityForOrder() {
+        Product product = product(1L);
+        Option option = option(product);
+        when(optionRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(option));
+        when(optionRepository.save(option)).thenReturn(option);
+
+        optionService.decreaseQuantityForOrder(1L, 2);
+
+        verify(optionRepository).save(option);
+    }
+
+    @Test
+    @DisplayName("주문 옵션이 존재하지 않으면 옵션 미존재 예외를 던진다")
+    void decreaseQuantityForOrderNotFound() {
+        when(optionRepository.findByIdForUpdate(999999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> optionService.decreaseQuantityForOrder(999999L, 1))
+            .isInstanceOf(OptionNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("주문 수량이 재고보다 많으면 옵션 수량 예외를 던진다")
+    void decreaseQuantityForOrderInsufficientQuantity() {
+        Product product = product(1L);
+        Option option = option(product);
+        when(optionRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(option));
+
+        assertThatThrownBy(() -> optionService.decreaseQuantityForOrder(1L, 11))
+            .isInstanceOf(OptionQuantityException.class);
     }
 
     private Product product(Long id) {

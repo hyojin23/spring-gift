@@ -51,6 +51,15 @@ public class OptionService {
         optionRepository.delete(option);
     }
 
+    @Transactional
+    public Option decreaseQuantityForOrder(Long optionId, int quantity) {
+        Option option = optionRepository.findByIdForUpdate(optionId)
+            .orElseThrow(OptionNotFoundException::new);
+
+        option.subtractQuantity(quantity);
+        return optionRepository.save(option);
+    }
+
     private Product findProduct(Long productId) {
         return productRepository.findById(productId)
             .orElseThrow(OptionProductNotFoundException::new);

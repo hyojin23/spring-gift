@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class WishServiceTest {
@@ -47,6 +48,19 @@ class WishServiceTest {
 
         assertThatThrownBy(() -> wishService.removeWish(1L, 1L))
             .isInstanceOf(UnauthorizedWishAccessException.class);
+    }
+
+    @Test
+    @DisplayName("회원과 상품으로 위시를 제거한다")
+    void removeWishByProduct() {
+        Product product = product();
+        Wish wish = new Wish(1L, product);
+        when(wishRepository.findByMemberIdAndProductId(1L, product.getId()))
+            .thenReturn(Optional.of(wish));
+
+        wishService.removeWishByProduct(1L, product.getId());
+
+        verify(wishRepository).delete(wish);
     }
 
     private Product product() {

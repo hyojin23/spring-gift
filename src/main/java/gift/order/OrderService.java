@@ -1,11 +1,12 @@
 package gift.order;
 
 import gift.member.Member;
-import gift.member.MemberRepository;
+import gift.member.MemberService;
 import gift.option.Option;
-import gift.option.OptionRepository;
+import gift.option.OptionService;
+import gift.option.exception.OptionNotFoundException;
 import gift.order.exception.OrderOptionNotFoundException;
-import gift.wish.WishRepository;
+import gift.wish.WishService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,22 +18,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OptionRepository optionRepository;
-    private final MemberRepository memberRepository;
-    private final WishRepository wishRepository;
+    private final OptionService optionService;
+    private final MemberService memberService;
+    private final WishService wishService;
     private final ApplicationEventPublisher eventPublisher;
 
     public OrderService(
         OrderRepository orderRepository,
-        OptionRepository optionRepository,
-        MemberRepository memberRepository,
-        WishRepository wishRepository,
+        OptionService optionService,
+        MemberService memberService,
+        WishService wishService,
         ApplicationEventPublisher eventPublisher
     ) {
         this.orderRepository = orderRepository;
-        this.optionRepository = optionRepository;
-        this.memberRepository = memberRepository;
-        this.wishRepository = wishRepository;
+        this.optionService = optionService;
+        this.memberService = memberService;
+        this.wishService = wishService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -43,25 +44,23 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(Member member, OrderRequest request) {
-        Option option = optionRepository.findByIdForUpdate(request.optionId())
-            .orElseThrow(() -> new OrderOptionNotFoundException(request.optionId()));
-        option.subtractQuantity(request.quantity());
-        optionRepository.save(option);
-
+        Option option = decreaseOptionQuantity(request);
         int totalPrice = calculateTotalPrice(option, request.quantity());
-        member.deductPoint(totalPrice);
-        memberRepository.save(member);
+        memberService.deductPointForOrder(member, totalPrice);
 
         Order saved = orderRepository.save(new Order(option, member.getId(), request.quantity(), request.message()));
 
-        cleanupWish(member.getId(), option);
+        wishService.removeWishByProduct(member.getId(), option.getProduct().getId());
         eventPublisher.publishEvent(new OrderCreatedEvent(saved.getId(), createNotificationPayload(member, option, request)));
         return OrderResponse.from(saved);
     }
 
-    private void cleanupWish(Long memberId, Option option) {
-        wishRepository.findByMemberIdAndProductId(memberId, option.getProduct().getId())
-            .ifPresent(wishRepository::delete);
+    private Option decreaseOptionQuantity(OrderRequest request) {
+        try {
+            return optionService.decreaseQuantityForOrder(request.optionId(), request.quantity());
+        } catch (OptionNotFoundException exception) {
+            throw new OrderOptionNotFoundException(request.optionId());
+        }
     }
 
     private int calculateTotalPrice(Option option, int quantity) {

@@ -4,6 +4,7 @@ import gift.option.Option;
 import gift.order.exception.OrderErrorCode;
 import gift.order.exception.OrderException;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,7 +21,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "option_id")
     private Option option;
     // primitive FK
@@ -67,6 +68,10 @@ public class Order {
 
     public Option getOption() {
         return option;
+    }
+
+    public Long getOptionId() {
+        return option.getId();
     }
 
     public Long getMemberId() {

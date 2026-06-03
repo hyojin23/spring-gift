@@ -1,6 +1,5 @@
 package gift.order;
 
-import gift.product.Product;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
@@ -15,8 +14,8 @@ public class KakaoMessageClient {
         this.templateBuilder = templateBuilder;
     }
 
-    public void sendToMe(String accessToken, Order order, Product product) {
-        String templateObject = templateBuilder.build(order, product);
+    public void sendToMe(String accessToken, OrderNotificationPayload payload) {
+        String templateObject = templateBuilder.build(payload);
 
         LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("template_object", templateObject);

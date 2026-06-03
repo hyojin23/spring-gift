@@ -15,6 +15,6 @@ public class OrderCreatedEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(OrderCreatedEvent event) {
-        orderNotificationService.sendOrderCreatedMessage(event.member(), event.order(), event.option());
+        orderNotificationService.sendOrderCreatedMessage(event.orderId(), event.notification());
     }
 }

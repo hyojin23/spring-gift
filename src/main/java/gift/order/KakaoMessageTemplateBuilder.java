@@ -1,15 +1,14 @@
 package gift.order;
 
-import gift.product.Product;
 import org.springframework.stereotype.Component;
 
 @Component
 public class KakaoMessageTemplateBuilder {
 
-    public String build(Order order, Product product) {
-        String totalPrice = String.format("%,d", product.getPrice() * order.getQuantity());
-        String message = order.getMessage() != null && !order.getMessage().isBlank()
-            ? "\\n\\n💌 " + order.getMessage()
+    public String build(OrderNotificationPayload payload) {
+        String totalPrice = String.format("%,d", payload.productPrice() * payload.quantity());
+        String message = payload.message() != null && !payload.message().isBlank()
+            ? "\\n\\n💌 " + payload.message()
             : "";
         return """
             {
@@ -19,9 +18,9 @@ public class KakaoMessageTemplateBuilder {
                 "button_title": "선물 확인하기"
             }
             """.formatted(
-            product.getName(),
-            order.getOption().getName(),
-            order.getQuantity(),
+            payload.productName(),
+            payload.optionName(),
+            payload.quantity(),
             totalPrice,
             message
         );

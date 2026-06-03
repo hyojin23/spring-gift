@@ -8,7 +8,9 @@ public record KakaoLoginProperties(
     String clientSecret,
     String redirectUri,
     String authorizationUri,
-    String tokenUri,
-    String userInfoUri
+    String tokenBaseUri,
+    String tokenPath,
+    String userInfoBaseUri,
+    String userInfoPath
 ) {
 }

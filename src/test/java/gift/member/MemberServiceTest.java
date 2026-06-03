@@ -5,11 +5,13 @@ import gift.member.exception.InvalidMemberCredentialsException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,20 +19,23 @@ import static org.mockito.Mockito.when;
 class MemberServiceTest {
 
     private final MemberRepository memberRepository = mock(MemberRepository.class);
-    private final MemberService memberService = new MemberService(memberRepository);
+    private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+    private final MemberService memberService = new MemberService(memberRepository, passwordEncoder);
 
     @Test
     @DisplayName("회원가입에 성공하면 회원을 저장하고 반환한다")
     void register() {
         MemberRequest request = new MemberRequest("member@example.com", "password");
-        Member member = new Member(request.email(), request.password());
+        Member member = new Member(request.email(), "encoded-password");
         when(memberRepository.existsByEmail(request.email())).thenReturn(false);
-        when(memberRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Member.class))).thenReturn(member);
+        when(passwordEncoder.encode(request.password())).thenReturn("encoded-password");
+        when(memberRepository.saveAndFlush(any(Member.class))).thenReturn(member);
 
         Member result = memberService.register(request);
 
         assertThat(result.getEmail()).isEqualTo(request.email());
-        assertThat(result.getPassword()).isEqualTo(request.password());
+        assertThat(result.getPassword()).isEqualTo("encoded-password");
+        verify(passwordEncoder).encode(request.password());
     }
 
     @Test
@@ -48,7 +53,8 @@ class MemberServiceTest {
     void registerDuplicateEmailByDatabaseConstraint() {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         when(memberRepository.existsByEmail(request.email())).thenReturn(false);
-        when(memberRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Member.class)))
+        when(passwordEncoder.encode(request.password())).thenReturn("encoded-password");
+        when(memberRepository.saveAndFlush(any(Member.class)))
             .thenThrow(new DataIntegrityViolationException("duplicate email"));
 
         assertThatThrownBy(() -> memberService.register(request))
@@ -59,12 +65,14 @@ class MemberServiceTest {
     @DisplayName("인증에 성공하면 회원을 반환한다")
     void authenticate() {
         MemberRequest request = new MemberRequest("member@example.com", "password");
-        Member member = new Member(request.email(), request.password());
+        Member member = new Member(request.email(), "encoded-password");
         when(memberRepository.findByEmail(request.email())).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches(request.password(), member.getPassword())).thenReturn(true);
 
         Member result = memberService.authenticate(request);
 
         assertThat(result).isEqualTo(member);
+        verify(passwordEncoder).matches(request.password(), member.getPassword());
     }
 
     @Test
@@ -81,8 +89,9 @@ class MemberServiceTest {
     @DisplayName("잘못된 비밀번호로 로그인하면 인증 실패 예외를 던진다")
     void loginWrongPassword() {
         MemberRequest request = new MemberRequest("member@example.com", "wrong-password");
-        Member member = new Member(request.email(), "password");
+        Member member = new Member(request.email(), "encoded-password");
         when(memberRepository.findByEmail(request.email())).thenReturn(Optional.of(member));
+        when(passwordEncoder.matches(request.password(), member.getPassword())).thenReturn(false);
 
         assertThatThrownBy(() -> memberService.authenticate(request))
             .isInstanceOf(InvalidMemberCredentialsException.class);

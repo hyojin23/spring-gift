@@ -2,14 +2,12 @@ package gift.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import feign.FeignException;
 import gift.auth.exception.KakaoLoginException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 @Component
 public class KakaoLoginClient {
@@ -17,38 +15,37 @@ public class KakaoLoginClient {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final KakaoLoginProperties properties;
-    private final RestClient restClient;
+    private final KakaoTokenFeignClient tokenFeignClient;
+    private final KakaoUserFeignClient userFeignClient;
 
-    public KakaoLoginClient(KakaoLoginProperties properties, RestClient.Builder builder) {
+    public KakaoLoginClient(
+        KakaoLoginProperties properties,
+        KakaoTokenFeignClient tokenFeignClient,
+        KakaoUserFeignClient userFeignClient
+    ) {
         this.properties = properties;
-        this.restClient = builder.build();
+        this.tokenFeignClient = tokenFeignClient;
+        this.userFeignClient = userFeignClient;
     }
 
     public KakaoTokenResponse requestAccessToken(String code) {
+        KakaoTokenResponse response;
         try {
-            KakaoTokenResponse response = restClient.post()
-                .uri(properties.tokenUri())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(createAccessTokenRequestParams(code))
-                .retrieve()
-                .body(KakaoTokenResponse.class);
-            return requireResponse(response);
-        } catch (RestClientException e) {
+            response = tokenFeignClient.requestAccessToken(createAccessTokenRequestParams(code));
+        } catch (FeignException e) {
             throw new KakaoLoginException("카카오 access token 요청에 실패했습니다.", e);
         }
+        return requireResponse(response);
     }
 
     public KakaoUserResponse requestUserInfo(String accessToken) {
+        KakaoUserResponse response;
         try {
-            KakaoUserResponse response = restClient.get()
-                .uri(properties.userInfoUri())
-                .header(HttpHeaders.AUTHORIZATION, bearerToken(accessToken))
-                .retrieve()
-                .body(KakaoUserResponse.class);
-            return requireResponse(response);
-        } catch (RestClientException e) {
+            response = userFeignClient.requestUserInfo(bearerToken(accessToken));
+        } catch (FeignException e) {
             throw new KakaoLoginException("카카오 사용자 정보 요청에 실패했습니다.", e);
         }
+        return requireResponse(response);
     }
 
     private MultiValueMap<String, String> createAccessTokenRequestParams(String code) {

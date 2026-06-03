@@ -8,6 +8,8 @@ plugins {
 group = "camp.nextstep.edu"
 version = "0.0.1-SNAPSHOT"
 
+extra["springCloudVersion"] = "2025.0.2"
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -23,6 +25,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-mysql")
     implementation(platform("io.jsonwebtoken:jjwt-bom:0.13.0"))
@@ -33,6 +36,12 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
+    }
 }
 
 tasks.withType<Test> {

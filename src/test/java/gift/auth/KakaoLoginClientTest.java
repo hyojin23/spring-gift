@@ -1,133 +1,113 @@
 package gift.auth;
 
+import feign.FeignException;
 import gift.auth.exception.KakaoLoginException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestClient;
+import org.mockito.ArgumentCaptor;
+import org.springframework.util.MultiValueMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.client.ExpectedCount.once;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class KakaoLoginClientTest {
-
-    private static final String TOKEN_URI = "https://kauth.kakao.com/oauth/token";
-    private static final String USER_INFO_URI = "https://kapi.kakao.com/v2/user/me";
 
     private final KakaoLoginProperties properties = new KakaoLoginProperties(
         "kakao-client-id",
         "kakao-client-secret",
         "http://localhost:8080/api/auth/kakao/callback",
         "https://kauth.kakao.com/oauth/authorize",
-        TOKEN_URI,
-        USER_INFO_URI
+        "https://kauth.kakao.com",
+        "/oauth/token",
+        "https://kapi.kakao.com",
+        "/v2/user/me"
     );
-    private final RestClient.Builder builder = RestClient.builder();
-    private final MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
-    private final KakaoLoginClient kakaoLoginClient = new KakaoLoginClient(properties, builder);
+    private final KakaoTokenFeignClient tokenFeignClient = mock(KakaoTokenFeignClient.class);
+    private final KakaoUserFeignClient userFeignClient = mock(KakaoUserFeignClient.class);
+    private final KakaoLoginClient kakaoLoginClient = new KakaoLoginClient(
+        properties,
+        tokenFeignClient,
+        userFeignClient
+    );
 
     @Test
     @DisplayName("카카오 access token 요청에 form 파라미터를 포함한다")
     void requestAccessToken() {
-        server.expect(once(), requestTo(TOKEN_URI))
-            .andExpect(method(HttpMethod.POST))
-            .andExpect(header(HttpHeaders.CONTENT_TYPE, containsString(MediaType.APPLICATION_FORM_URLENCODED_VALUE)))
-            .andExpect(content().string(allOf(
-                containsString("grant_type=authorization_code"),
-                containsString("client_id=kakao-client-id"),
-                containsString("redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fapi%2Fauth%2Fkakao%2Fcallback"),
-                containsString("code=authorization-code"),
-                containsString("client_secret=kakao-client-secret")
-            )))
-            .andRespond(withSuccess("{\"access_token\":\"kakao-access-token\"}", MediaType.APPLICATION_JSON));
+        when(tokenFeignClient.requestAccessToken(org.mockito.ArgumentMatchers.any()))
+            .thenReturn(new KakaoLoginClient.KakaoTokenResponse("kakao-access-token"));
 
         KakaoLoginClient.KakaoTokenResponse response = kakaoLoginClient.requestAccessToken("authorization-code");
 
         assertThat(response.accessToken()).isEqualTo("kakao-access-token");
-        server.verify();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<MultiValueMap<String, String>> paramsCaptor = ArgumentCaptor.forClass(MultiValueMap.class);
+        verify(tokenFeignClient).requestAccessToken(paramsCaptor.capture());
+        MultiValueMap<String, String> params = paramsCaptor.getValue();
+        assertThat(params.getFirst("grant_type")).isEqualTo("authorization_code");
+        assertThat(params.getFirst("client_id")).isEqualTo("kakao-client-id");
+        assertThat(params.getFirst("redirect_uri")).isEqualTo("http://localhost:8080/api/auth/kakao/callback");
+        assertThat(params.getFirst("code")).isEqualTo("authorization-code");
+        assertThat(params.getFirst("client_secret")).isEqualTo("kakao-client-secret");
     }
 
     @Test
     @DisplayName("카카오 access token 요청에 실패하면 카카오 로그인 예외가 발생한다")
     void requestAccessTokenFailure() {
-        server.expect(once(), requestTo(TOKEN_URI))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withStatus(HttpStatus.BAD_REQUEST));
+        when(tokenFeignClient.requestAccessToken(org.mockito.ArgumentMatchers.any()))
+            .thenThrow(mock(FeignException.class));
 
         assertThatThrownBy(() -> kakaoLoginClient.requestAccessToken("authorization-code"))
             .isInstanceOf(KakaoLoginException.class)
             .hasMessage("카카오 access token 요청에 실패했습니다.");
-        server.verify();
     }
 
     @Test
     @DisplayName("카카오 access token 응답 body가 비어 있으면 카카오 로그인 예외가 발생한다")
     void requestAccessTokenWithEmptyBody() {
-        server.expect(once(), requestTo(TOKEN_URI))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withSuccess());
+        when(tokenFeignClient.requestAccessToken(org.mockito.ArgumentMatchers.any()))
+            .thenReturn(null);
 
         assertThatThrownBy(() -> kakaoLoginClient.requestAccessToken("authorization-code"))
             .isInstanceOf(KakaoLoginException.class)
             .hasMessage("카카오 access token 응답이 비어 있습니다.");
-        server.verify();
     }
 
     @Test
     @DisplayName("카카오 사용자 정보 요청에 Bearer Authorization header를 포함한다")
     void requestUserInfo() {
-        server.expect(once(), requestTo(USER_INFO_URI))
-            .andExpect(method(HttpMethod.GET))
-            .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer kakao-access-token"))
-            .andRespond(withSuccess(
-                "{\"kakao_account\":{\"email\":\"member@example.com\"}}",
-                MediaType.APPLICATION_JSON
+        when(userFeignClient.requestUserInfo("Bearer kakao-access-token"))
+            .thenReturn(new KakaoLoginClient.KakaoUserResponse(
+                new KakaoLoginClient.KakaoUserResponse.KakaoAccount("member@example.com")
             ));
 
         KakaoLoginClient.KakaoUserResponse response = kakaoLoginClient.requestUserInfo("kakao-access-token");
 
         assertThat(response.email()).isEqualTo("member@example.com");
-        server.verify();
+        verify(userFeignClient).requestUserInfo("Bearer kakao-access-token");
     }
 
     @Test
     @DisplayName("카카오 사용자 정보 요청에 실패하면 카카오 로그인 예외가 발생한다")
     void requestUserInfoFailure() {
-        server.expect(once(), requestTo(USER_INFO_URI))
-            .andExpect(method(HttpMethod.GET))
-            .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer kakao-access-token"))
-            .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        when(userFeignClient.requestUserInfo("Bearer kakao-access-token"))
+            .thenThrow(mock(FeignException.class));
 
         assertThatThrownBy(() -> kakaoLoginClient.requestUserInfo("kakao-access-token"))
             .isInstanceOf(KakaoLoginException.class)
             .hasMessage("카카오 사용자 정보 요청에 실패했습니다.");
-        server.verify();
     }
 
     @Test
     @DisplayName("카카오 사용자 정보 응답 body가 비어 있으면 카카오 로그인 예외가 발생한다")
     void requestUserInfoWithEmptyBody() {
-        server.expect(once(), requestTo(USER_INFO_URI))
-            .andExpect(method(HttpMethod.GET))
-            .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer kakao-access-token"))
-            .andRespond(withSuccess());
+        when(userFeignClient.requestUserInfo("Bearer kakao-access-token"))
+            .thenReturn(null);
 
         assertThatThrownBy(() -> kakaoLoginClient.requestUserInfo("kakao-access-token"))
             .isInstanceOf(KakaoLoginException.class)
             .hasMessage("카카오 사용자 정보 응답이 비어 있습니다.");
-        server.verify();
     }
 }

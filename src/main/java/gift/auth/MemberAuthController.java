@@ -1,6 +1,6 @@
-package gift.member;
+package gift.auth;
 
-import gift.auth.TokenResponse;
+import gift.member.MemberRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,21 +17,21 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/members")
-public class MemberController {
-    private final MemberService memberService;
+public class MemberAuthController {
+    private final MemberAuthService memberAuthService;
 
-    public MemberController(MemberService memberService) {
-        this.memberService = memberService;
+    public MemberAuthController(MemberAuthService memberAuthService) {
+        this.memberAuthService = memberAuthService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(@Valid @RequestBody MemberRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(memberService.register(request));
+            .body(memberAuthService.register(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody MemberRequest request) {
-        return ResponseEntity.ok(memberService.login(request));
+        return ResponseEntity.ok(memberAuthService.login(request));
     }
 }

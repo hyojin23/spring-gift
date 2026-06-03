@@ -1,7 +1,5 @@
 package gift.member;
 
-import gift.auth.JwtProvider;
-import gift.auth.TokenResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InvalidMemberCredentialsException;
 import org.springframework.stereotype.Service;
@@ -12,24 +10,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final JwtProvider jwtProvider;
 
-    public MemberService(MemberRepository memberRepository, JwtProvider jwtProvider) {
+    public MemberService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
-        this.jwtProvider = jwtProvider;
     }
 
     @Transactional
-    public TokenResponse register(MemberRequest request) {
+    public Member register(MemberRequest request) {
         if (memberRepository.existsByEmail(request.email())) {
             throw new DuplicateMemberEmailException();
         }
 
-        Member member = memberRepository.save(new Member(request.email(), request.password()));
-        return createTokenResponse(member);
+        return memberRepository.save(new Member(request.email(), request.password()));
     }
 
-    public TokenResponse login(MemberRequest request) {
+    public Member authenticate(MemberRequest request) {
         Member member = memberRepository.findByEmail(request.email())
             .orElseThrow(InvalidMemberCredentialsException::new);
 
@@ -37,10 +32,6 @@ public class MemberService {
             throw new InvalidMemberCredentialsException();
         }
 
-        return createTokenResponse(member);
-    }
-
-    private TokenResponse createTokenResponse(Member member) {
-        return new TokenResponse(jwtProvider.createToken(member.getEmail()));
+        return member;
     }
 }

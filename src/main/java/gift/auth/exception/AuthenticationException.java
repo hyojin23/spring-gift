@@ -1,4 +1,4 @@
-package gift.wish.exception;
+package gift.auth.exception;
 
 public class AuthenticationException extends RuntimeException {
 

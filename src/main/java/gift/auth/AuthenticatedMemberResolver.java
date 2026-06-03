@@ -1,7 +1,7 @@
 package gift.auth;
 
 import gift.member.Member;
-import gift.wish.exception.AuthenticationException;
+import gift.auth.exception.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 @Component

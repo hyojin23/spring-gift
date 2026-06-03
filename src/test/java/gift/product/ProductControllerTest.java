@@ -182,4 +182,14 @@ class ProductControllerTest {
         mockMvc.perform(delete("/api/products/4"))
             .andExpect(status().isNoContent());
     }
+
+    @Test
+    @DisplayName("존재하지 않는 상품을 삭제하면 404 에러 응답을 반환한다")
+    void deleteProductNotFound() throws Exception {
+        mockMvc.perform(delete("/api/products/999999"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PRODUCT.NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("요청한 상품을 찾을 수 없습니다."))
+            .andExpect(jsonPath("$.timestamp").exists());
+    }
 }

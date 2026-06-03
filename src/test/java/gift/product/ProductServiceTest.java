@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ProductServiceTest {
@@ -68,6 +69,26 @@ class ProductServiceTest {
 
         assertThatThrownBy(() -> productService.updateProduct(999999L, request))
             .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 상품을 삭제하면 상품 미존재 예외를 던진다")
+    void deleteProductNotFound() {
+        when(productRepository.findById(999999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> productService.deleteProduct(999999L))
+            .isInstanceOf(ProductNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("상품 삭제 시 상품을 조회한 뒤 삭제한다")
+    void deleteProduct() {
+        Product product = new Product("상품", 1000, "https://example.com/product.jpg", category(1L));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+
+        productService.deleteProduct(1L);
+
+        verify(productRepository).delete(product);
     }
 
     private Category category(Long id) {

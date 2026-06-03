@@ -1,6 +1,5 @@
 package gift.member;
 
-import gift.auth.JwtProvider;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InvalidMemberCredentialsException;
 import org.junit.jupiter.api.DisplayName;
@@ -16,19 +15,20 @@ import static org.mockito.Mockito.when;
 class MemberServiceTest {
 
     private final MemberRepository memberRepository = mock(MemberRepository.class);
-    private final JwtProvider jwtProvider = mock(JwtProvider.class);
-    private final MemberService memberService = new MemberService(memberRepository, jwtProvider);
+    private final MemberService memberService = new MemberService(memberRepository);
 
     @Test
-    @DisplayName("회원가입에 성공하면 토큰을 반환한다")
+    @DisplayName("회원가입에 성공하면 회원을 저장하고 반환한다")
     void register() {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         Member member = new Member(request.email(), request.password());
         when(memberRepository.existsByEmail(request.email())).thenReturn(false);
         when(memberRepository.save(org.mockito.ArgumentMatchers.any(Member.class))).thenReturn(member);
-        when(jwtProvider.createToken(request.email())).thenReturn("token");
 
-        assertThat(memberService.register(request).token()).isEqualTo("token");
+        Member result = memberService.register(request);
+
+        assertThat(result.getEmail()).isEqualTo(request.email());
+        assertThat(result.getPassword()).isEqualTo(request.password());
     }
 
     @Test
@@ -42,14 +42,15 @@ class MemberServiceTest {
     }
 
     @Test
-    @DisplayName("로그인에 성공하면 토큰을 반환한다")
-    void login() {
+    @DisplayName("인증에 성공하면 회원을 반환한다")
+    void authenticate() {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         Member member = new Member(request.email(), request.password());
         when(memberRepository.findByEmail(request.email())).thenReturn(Optional.of(member));
-        when(jwtProvider.createToken(request.email())).thenReturn("token");
 
-        assertThat(memberService.login(request).token()).isEqualTo("token");
+        Member result = memberService.authenticate(request);
+
+        assertThat(result).isEqualTo(member);
     }
 
     @Test
@@ -58,7 +59,7 @@ class MemberServiceTest {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         when(memberRepository.findByEmail(request.email())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> memberService.login(request))
+        assertThatThrownBy(() -> memberService.authenticate(request))
             .isInstanceOf(InvalidMemberCredentialsException.class);
     }
 
@@ -69,7 +70,7 @@ class MemberServiceTest {
         Member member = new Member(request.email(), "password");
         when(memberRepository.findByEmail(request.email())).thenReturn(Optional.of(member));
 
-        assertThatThrownBy(() -> memberService.login(request))
+        assertThatThrownBy(() -> memberService.authenticate(request))
             .isInstanceOf(InvalidMemberCredentialsException.class);
     }
 }

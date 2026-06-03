@@ -55,7 +55,7 @@ public class OrderService {
         Order saved = orderRepository.save(new Order(option, member.getId(), request.quantity(), request.message()));
 
         cleanupWish(member.getId(), option);
-        eventPublisher.publishEvent(new OrderCreatedEvent(member, saved, option));
+        eventPublisher.publishEvent(new OrderCreatedEvent(saved.getId(), createNotificationPayload(member, option, request)));
         return OrderResponse.from(saved);
     }
 
@@ -66,5 +66,16 @@ public class OrderService {
 
     private int calculateTotalPrice(Option option, int quantity) {
         return option.getProduct().getPrice() * quantity;
+    }
+
+    private OrderNotificationPayload createNotificationPayload(Member member, Option option, OrderRequest request) {
+        return new OrderNotificationPayload(
+            member.getKakaoAccessToken(),
+            option.getProduct().getName(),
+            option.getName(),
+            option.getProduct().getPrice(),
+            request.quantity(),
+            request.message()
+        );
     }
 }

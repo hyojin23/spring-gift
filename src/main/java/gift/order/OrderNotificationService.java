@@ -1,7 +1,5 @@
 package gift.order;
 
-import gift.member.Member;
-import gift.option.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -16,14 +14,14 @@ public class OrderNotificationService {
         this.kakaoMessageClient = kakaoMessageClient;
     }
 
-    public void sendOrderCreatedMessage(Member member, Order order, Option option) {
-        if (member.getKakaoAccessToken() == null) {
+    public void sendOrderCreatedMessage(Long orderId, OrderNotificationPayload payload) {
+        if (payload.kakaoAccessToken() == null) {
             return;
         }
         try {
-            kakaoMessageClient.sendToMe(member.getKakaoAccessToken(), order, option.getProduct());
+            kakaoMessageClient.sendToMe(payload.kakaoAccessToken(), payload);
         } catch (Exception exception) {
-            log.warn("카카오 주문 메시지 발송에 실패했습니다. orderId={}", order.getId(), exception);
+            log.warn("카카오 주문 메시지 발송에 실패했습니다. orderId={}", orderId, exception);
         }
     }
 }

@@ -66,6 +66,7 @@ class OrderServiceTest {
     void createOrder() {
         Member member = member();
         member.chargePoint(10_000);
+        member.updateKakaoAccessToken("kakao-token");
         Option option = option();
         Wish wish = new Wish(member.getId(), option.getProduct());
         OrderRequest request = new OrderRequest(1L, 2, "선물 메시지");
@@ -85,9 +86,14 @@ class OrderServiceTest {
         verify(wishRepository).delete(wish);
         ArgumentCaptor<OrderCreatedEvent> eventCaptor = ArgumentCaptor.forClass(OrderCreatedEvent.class);
         verify(eventPublisher).publishEvent(eventCaptor.capture());
-        assertThat(eventCaptor.getValue().member()).isEqualTo(member);
-        assertThat(eventCaptor.getValue().order()).isEqualTo(saved);
-        assertThat(eventCaptor.getValue().option()).isEqualTo(option);
+        OrderCreatedEvent event = eventCaptor.getValue();
+        assertThat(event.orderId()).isEqualTo(saved.getId());
+        assertThat(event.notification().kakaoAccessToken()).isEqualTo(member.getKakaoAccessToken());
+        assertThat(event.notification().productName()).isEqualTo("상품");
+        assertThat(event.notification().optionName()).isEqualTo("옵션");
+        assertThat(event.notification().productPrice()).isEqualTo(1_000);
+        assertThat(event.notification().quantity()).isEqualTo(2);
+        assertThat(event.notification().message()).isEqualTo("선물 메시지");
     }
 
     @Test

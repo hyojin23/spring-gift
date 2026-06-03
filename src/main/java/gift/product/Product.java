@@ -2,6 +2,7 @@ package gift.product;
 
 import gift.category.Category;
 import gift.product.exception.ProductValidationException;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -24,6 +25,9 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @Column(name = "category_id", insertable = false, updatable = false)
+    private Long categoryId;
 
     protected Product() {
     }
@@ -92,4 +96,10 @@ public class Product {
         return category;
     }
 
+    public Long getCategoryId() {
+        if (categoryId != null) {
+            return categoryId;
+        }
+        return category.getId();
+    }
 }

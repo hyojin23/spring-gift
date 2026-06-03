@@ -4,6 +4,7 @@ import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InvalidMemberCredentialsException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ class MemberServiceTest {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         Member member = new Member(request.email(), request.password());
         when(memberRepository.existsByEmail(request.email())).thenReturn(false);
-        when(memberRepository.save(org.mockito.ArgumentMatchers.any(Member.class))).thenReturn(member);
+        when(memberRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Member.class))).thenReturn(member);
 
         Member result = memberService.register(request);
 
@@ -37,6 +38,18 @@ class MemberServiceTest {
     void registerDuplicateEmail() {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         when(memberRepository.existsByEmail(request.email())).thenReturn(true);
+
+        assertThatThrownBy(() -> memberService.register(request))
+            .isInstanceOf(DuplicateMemberEmailException.class);
+    }
+
+    @Test
+    @DisplayName("회원 저장 시 DB unique 제약 위반이 발생하면 중복 이메일 예외를 던진다")
+    void registerDuplicateEmailByDatabaseConstraint() {
+        MemberRequest request = new MemberRequest("member@example.com", "password");
+        when(memberRepository.existsByEmail(request.email())).thenReturn(false);
+        when(memberRepository.saveAndFlush(org.mockito.ArgumentMatchers.any(Member.class)))
+            .thenThrow(new DataIntegrityViolationException("duplicate email"));
 
         assertThatThrownBy(() -> memberService.register(request))
             .isInstanceOf(DuplicateMemberEmailException.class);

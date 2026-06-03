@@ -3,6 +3,7 @@ package gift.member;
 import gift.member.exception.InsufficientMemberPointException;
 import gift.member.exception.InvalidMemberPointAmountException;
 import gift.member.exception.MemberValidationException;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,6 +21,7 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
     private String password;

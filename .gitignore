@@ -41,3 +41,18 @@ out/
 
 ### Mac OS ###
 .DS_Store
+
+### spec-kit generated helpers ###
+.github/agents/
+.github/prompts/
+.specify/extensions.yml
+.specify/*.json
+.specify/extensions/
+.specify/integrations/
+.specify/scripts/
+.specify/workflows/
+specs/**/research.md
+specs/**/data-model.md
+specs/**/quickstart.md
+specs/**/contracts/
+specs/**/checklists/

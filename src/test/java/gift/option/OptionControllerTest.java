@@ -64,6 +64,16 @@ class OptionControllerTest {
     }
 
     @Test
+    @DisplayName("옵션이 1개인 상품에서 존재하지 않는 옵션을 삭제하면 404 에러 응답을 반환한다")
+    void deleteMissingOptionFromSingleOptionProduct() throws Exception {
+        mockMvc.perform(delete("/api/products/3/options/999999"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("OPTION.NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("요청한 옵션을 찾을 수 없습니다."))
+            .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
     @DisplayName("중복 옵션명으로 생성하면 400 에러 응답을 반환한다")
     void createOptionDuplicateName() throws Exception {
         String request = """

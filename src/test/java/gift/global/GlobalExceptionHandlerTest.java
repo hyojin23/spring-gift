@@ -6,6 +6,7 @@ import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InsufficientMemberPointException;
 import gift.member.exception.InvalidMemberCredentialsException;
+import gift.member.exception.PointDeductionTargetNotFoundException;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
@@ -103,6 +104,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("MEMBER.INSUFFICIENT_POINT");
         assertThat(response.getBody().message()).isEqualTo("포인트가 부족합니다.");
+    }
+
+    @Test
+    @DisplayName("포인트 차감 대상 미존재 예외를 404 에러 응답으로 변환한다")
+    void handlePointDeductionTargetNotFound() {
+        ResponseEntity<ErrorResponse> response = handler.handlePointDeductionTargetNotFound(
+            new PointDeductionTargetNotFoundException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("MEMBER.POINT_TARGET_NOT_FOUND");
+        assertThat(response.getBody().message()).isEqualTo("포인트 차감 대상을 찾을 수 없습니다.");
     }
 
     @Test

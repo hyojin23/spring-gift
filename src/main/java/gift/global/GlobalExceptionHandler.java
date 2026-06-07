@@ -6,6 +6,7 @@ import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InsufficientMemberPointException;
 import gift.member.exception.InvalidMemberCredentialsException;
+import gift.member.exception.PointDeductionTargetNotFoundException;
 import gift.option.exception.DuplicateOptionNameException;
 import gift.option.exception.OptionDeletionNotAllowedException;
 import gift.option.exception.OptionNotFoundException;
@@ -58,6 +59,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InsufficientMemberPointException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientMemberPoint(InsufficientMemberPointException exception) {
         return error(HttpStatus.BAD_REQUEST, "MEMBER.INSUFFICIENT_POINT", exception.getMessage());
+    }
+
+    @ExceptionHandler(PointDeductionTargetNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePointDeductionTargetNotFound(
+        PointDeductionTargetNotFoundException exception
+    ) {
+        return error(HttpStatus.NOT_FOUND, "MEMBER.POINT_TARGET_NOT_FOUND", exception.getMessage());
     }
 
     @ExceptionHandler(UnauthorizedWishAccessException.class)

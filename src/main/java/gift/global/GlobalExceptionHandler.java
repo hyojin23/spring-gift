@@ -13,6 +13,7 @@ import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
+import gift.option.exception.OrderedOptionDeletionNotAllowedException;
 import gift.order.exception.OrderException;
 import gift.product.exception.ProductCategoryNotFoundException;
 import gift.product.exception.ProductDeletionNotAllowedException;
@@ -106,6 +107,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(OptionDeletionNotAllowedException.class)
     public ResponseEntity<ErrorResponse> handleOptionDeletionNotAllowed(OptionDeletionNotAllowedException exception) {
         return error(HttpStatus.BAD_REQUEST, "OPTION.DELETE_NOT_ALLOWED", exception.getMessage());
+    }
+
+    @ExceptionHandler(OrderedOptionDeletionNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handleOrderedOptionDeletionNotAllowed(
+        OrderedOptionDeletionNotAllowedException exception
+    ) {
+        return error(HttpStatus.CONFLICT, "OPTION.ORDERED_DELETE_NOT_ALLOWED", exception.getMessage());
     }
 
     @ExceptionHandler(OptionValidationException.class)

@@ -17,10 +17,16 @@ public class OptionService {
 
     private final OptionRepository optionRepository;
     private final ProductRepository productRepository;
+    private final OptionDeletionPolicy optionDeletionPolicy;
 
-    public OptionService(OptionRepository optionRepository, ProductRepository productRepository) {
+    public OptionService(
+        OptionRepository optionRepository,
+        ProductRepository productRepository,
+        OptionDeletionPolicy optionDeletionPolicy
+    ) {
         this.optionRepository = optionRepository;
         this.productRepository = productRepository;
+        this.optionDeletionPolicy = optionDeletionPolicy;
     }
 
     public List<OptionResponse> getOptions(Long productId) {
@@ -48,6 +54,7 @@ public class OptionService {
         Option option = optionRepository.findByIdAndProductId(optionId, productId)
             .orElseThrow(OptionNotFoundException::new);
 
+        optionDeletionPolicy.validateDeletable(optionId);
         optionRepository.delete(option);
     }
 

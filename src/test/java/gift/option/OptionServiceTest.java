@@ -7,6 +7,7 @@ import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionValidationException;
+import gift.option.exception.OrderedOptionDeletionNotAllowedException;
 import gift.product.Product;
 import gift.product.ProductRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +17,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,7 +26,12 @@ class OptionServiceTest {
 
     private final OptionRepository optionRepository = mock(OptionRepository.class);
     private final ProductRepository productRepository = mock(ProductRepository.class);
-    private final OptionService optionService = new OptionService(optionRepository, productRepository);
+    private final OptionDeletionPolicy optionDeletionPolicy = mock(OptionDeletionPolicy.class);
+    private final OptionService optionService = new OptionService(
+        optionRepository,
+        productRepository,
+        optionDeletionPolicy
+    );
 
     @Test
     @DisplayName("상품을 찾지 못하면 옵션 상품 미존재 예외를 던진다")
@@ -91,7 +98,24 @@ class OptionServiceTest {
 
         optionService.deleteOption(1L, 5L);
 
+        verify(optionDeletionPolicy).validateDeletable(5L);
         verify(optionRepository).delete(option);
+    }
+
+    @Test
+    @DisplayName("주문 이력이 있는 옵션을 삭제하면 주문된 옵션 삭제 불가 예외를 던진다")
+    void deleteOrderedOption() {
+        Product product = product(1L);
+        Option option = option(product);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(optionRepository.countByProductId(1L)).thenReturn(2L);
+        when(optionRepository.findByIdAndProductId(5L, 1L)).thenReturn(Optional.of(option));
+        doThrow(new OrderedOptionDeletionNotAllowedException())
+            .when(optionDeletionPolicy)
+            .validateDeletable(5L);
+
+        assertThatThrownBy(() -> optionService.deleteOption(1L, 5L))
+            .isInstanceOf(OrderedOptionDeletionNotAllowedException.class);
     }
 
     @Test

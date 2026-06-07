@@ -13,6 +13,7 @@ import gift.option.exception.OptionNotFoundException;
 import gift.option.exception.OptionProductNotFoundException;
 import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
+import gift.option.exception.OrderedOptionDeletionNotAllowedException;
 import gift.order.exception.OrderErrorCode;
 import gift.order.exception.OrderException;
 import gift.product.exception.ProductCategoryNotFoundException;
@@ -211,6 +212,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("OPTION.DELETE_NOT_ALLOWED");
+    }
+
+    @Test
+    @DisplayName("주문된 옵션 삭제 불가 예외를 409 에러 응답으로 변환한다")
+    void handleOrderedOptionDeletionNotAllowed() {
+        ResponseEntity<ErrorResponse> response = handler.handleOrderedOptionDeletionNotAllowed(
+            new OrderedOptionDeletionNotAllowedException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("OPTION.ORDERED_DELETE_NOT_ALLOWED");
+        assertThat(response.getBody().message()).isEqualTo("주문 이력이 있는 옵션은 삭제할 수 없습니다.");
     }
 
     @Test

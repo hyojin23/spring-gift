@@ -49,11 +49,11 @@ public class OptionService {
     @Transactional
     public void deleteOption(Long productId, Long optionId) {
         findProduct(productId);
-        validateCanDelete(productId);
 
         Option option = optionRepository.findByIdAndProductId(optionId, productId)
             .orElseThrow(OptionNotFoundException::new);
 
+        validateCanDelete(productId);
         optionDeletionPolicy.validateDeletable(optionId);
         optionRepository.delete(option);
     }

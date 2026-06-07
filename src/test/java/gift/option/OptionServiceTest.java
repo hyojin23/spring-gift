@@ -68,10 +68,20 @@ class OptionServiceTest {
     void deleteOptionNotFound() {
         Product product = product(1L);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(optionRepository.countByProductId(1L)).thenReturn(2L);
         when(optionRepository.findByIdAndProductId(999999L, 1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> optionService.deleteOption(1L, 999999L))
+            .isInstanceOf(OptionNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("옵션이 1개인 상품에서 존재하지 않는 옵션을 삭제하면 옵션 미존재 예외를 던진다")
+    void deleteMissingOptionFromSingleOptionProduct() {
+        Product product = product(3L);
+        when(productRepository.findById(3L)).thenReturn(Optional.of(product));
+        when(optionRepository.findByIdAndProductId(999999L, 3L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> optionService.deleteOption(3L, 999999L))
             .isInstanceOf(OptionNotFoundException.class);
     }
 
@@ -80,7 +90,6 @@ class OptionServiceTest {
     void deleteOptionFromDifferentProduct() {
         Product product = product(1L);
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(optionRepository.countByProductId(1L)).thenReturn(2L);
         when(optionRepository.findByIdAndProductId(5L, 1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> optionService.deleteOption(1L, 5L))
@@ -122,7 +131,9 @@ class OptionServiceTest {
     @DisplayName("마지막 옵션을 삭제하려 하면 옵션 삭제 제한 예외를 던진다")
     void deleteLastOption() {
         Product product = product(3L);
+        Option option = option(product);
         when(productRepository.findById(3L)).thenReturn(Optional.of(product));
+        when(optionRepository.findByIdAndProductId(5L, 3L)).thenReturn(Optional.of(option));
         when(optionRepository.countByProductId(3L)).thenReturn(1L);
 
         assertThatThrownBy(() -> optionService.deleteOption(3L, 5L))

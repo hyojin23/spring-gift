@@ -14,6 +14,7 @@ import gift.option.exception.OptionQuantityException;
 import gift.option.exception.OptionValidationException;
 import gift.order.exception.OrderException;
 import gift.product.exception.ProductCategoryNotFoundException;
+import gift.product.exception.ProductDeletionNotAllowedException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
 import gift.auth.exception.AuthenticationException;
@@ -131,6 +132,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ProductValidationException.class)
     public ResponseEntity<ErrorResponse> handleProductValidation(ProductValidationException exception) {
         return error(HttpStatus.BAD_REQUEST, "PRODUCT.INVALID_NAME", exception.getMessage());
+    }
+
+    @ExceptionHandler(ProductDeletionNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handleProductDeletionNotAllowed(ProductDeletionNotAllowedException exception) {
+        return error(HttpStatus.CONFLICT, "PRODUCT.DELETE_NOT_ALLOWED", exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

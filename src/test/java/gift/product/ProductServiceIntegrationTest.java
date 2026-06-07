@@ -2,7 +2,10 @@ package gift.product;
 
 import gift.category.Category;
 import gift.category.CategoryRepository;
+import gift.option.Option;
+import gift.option.OptionRepository;
 import gift.product.exception.ProductCategoryNotFoundException;
+import gift.product.exception.ProductDeletionNotAllowedException;
 import gift.product.exception.ProductNotFoundException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +29,9 @@ class ProductServiceIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private OptionRepository optionRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -79,6 +85,21 @@ class ProductServiceIntegrationTest {
         flushAndClear();
 
         assertThat(productRepository.existsById(saved.getId())).isFalse();
+    }
+
+    @Test
+    @DisplayName("옵션이 있는 상품을 삭제하면 상품 삭제 불가 예외가 발생한다")
+    void deleteProductWithOptions() {
+        Category category = saveCategory();
+        Product saved = productRepository.save(
+            new Product("product", 1_000, "https://example.com/product.jpg", category)
+        );
+        optionRepository.save(new Option(saved, "option", 10));
+        flushAndClear();
+
+        assertThatThrownBy(() -> productService.deleteProduct(saved.getId()))
+            .isInstanceOf(ProductDeletionNotAllowedException.class);
+        assertThat(productRepository.existsById(saved.getId())).isTrue();
     }
 
     @Test

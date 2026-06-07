@@ -45,8 +45,10 @@ public class MemberService {
     }
 
     @Transactional
-    public void deductPointForOrder(Member member, int amount) {
+    public Member deductPointForOrder(Long memberId, int amount) {
+        Member member = memberRepository.findByIdForUpdate(memberId)
+            .orElseThrow(InvalidMemberCredentialsException::new);
         member.deductPoint(amount);
-        memberRepository.save(member);
+        return member;
     }
 }

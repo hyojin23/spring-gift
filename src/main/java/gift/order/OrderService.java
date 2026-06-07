@@ -47,12 +47,14 @@ public class OrderService {
     public OrderResponse createOrder(Member member, OrderRequest request) {
         Option option = decreaseOptionQuantity(request);
         int totalPrice = calculateTotalPrice(option, request.quantity());
-        memberService.deductPointForOrder(member, totalPrice);
+        Member chargedMember = memberService.deductPointForOrder(member.getId(), totalPrice);
 
-        Order saved = orderRepository.save(new Order(option, member.getId(), request.quantity(), request.message()));
+        Order saved = orderRepository.save(new Order(option, chargedMember.getId(), request.quantity(), request.message()));
 
-        wishService.removeWishByProduct(member.getId(), option.getProduct().getId());
-        eventPublisher.publishEvent(new OrderCreatedEvent(saved.getId(), createNotificationPayload(member, option, request)));
+        wishService.removeWishByProduct(chargedMember.getId(), option.getProduct().getId());
+        eventPublisher.publishEvent(
+            new OrderCreatedEvent(saved.getId(), createNotificationPayload(chargedMember, option, request))
+        );
         return OrderResponse.from(saved);
     }
 

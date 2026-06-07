@@ -102,10 +102,11 @@ class MemberServiceTest {
     void deductPointForOrder() {
         Member member = new Member("member@example.com", "password");
         member.chargePoint(10_000);
+        when(memberRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(member));
 
-        memberService.deductPointForOrder(member, 2_000);
+        Member result = memberService.deductPointForOrder(1L, 2_000);
 
-        assertThat(member.getPoint()).isEqualTo(8_000);
-        verify(memberRepository).save(member);
+        assertThat(result.getPoint()).isEqualTo(8_000);
+        verify(memberRepository).findByIdForUpdate(1L);
     }
 }

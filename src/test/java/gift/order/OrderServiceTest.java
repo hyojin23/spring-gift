@@ -71,13 +71,14 @@ class OrderServiceTest {
         OrderRequest request = new OrderRequest(1L, 2, "gift message");
         Order saved = order(option, 1L, 2);
         when(optionService.decreaseQuantityForOrder(1L, 2)).thenReturn(option);
+        when(memberService.deductPointForOrder(1L, 2_000)).thenReturn(member);
         when(orderRepository.save(any(Order.class))).thenReturn(saved);
 
         OrderResponse response = orderService.createOrder(member, request);
 
         assertThat(response.optionId()).isEqualTo(1L);
         verify(optionService).decreaseQuantityForOrder(1L, 2);
-        verify(memberService).deductPointForOrder(member, 2_000);
+        verify(memberService).deductPointForOrder(member.getId(), 2_000);
         verify(wishService).removeWishByProduct(member.getId(), option.getProduct().getId());
         ArgumentCaptor<OrderCreatedEvent> eventCaptor = ArgumentCaptor.forClass(OrderCreatedEvent.class);
         verify(eventPublisher).publishEvent(eventCaptor.capture());
@@ -134,7 +135,7 @@ class OrderServiceTest {
         when(optionService.decreaseQuantityForOrder(1L, 2)).thenReturn(option);
         doThrow(new InsufficientMemberPointException())
             .when(memberService)
-            .deductPointForOrder(member, 2_000);
+            .deductPointForOrder(member.getId(), 2_000);
 
         assertThatThrownBy(() -> orderService.createOrder(member, request))
             .isInstanceOf(InsufficientMemberPointException.class);

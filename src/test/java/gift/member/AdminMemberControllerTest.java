@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
@@ -26,6 +27,9 @@ class AdminMemberControllerTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private MemberService memberService;
 
     @Test
     @DisplayName("관리자 회원 목록 화면을 조회한다")
@@ -63,6 +67,11 @@ class AdminMemberControllerTest {
                 .param("password", "password"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/admin/members"));
+
+        Member member = memberRepository.findByEmail("admin-new-member@example.com").orElseThrow();
+        assertThat(member.getPassword()).isNotEqualTo("password");
+        Member authenticated = memberService.authenticate(new MemberRequest("admin-new-member@example.com", "password"));
+        assertThat(authenticated.getEmail()).isEqualTo("admin-new-member@example.com");
     }
 
     @Test
@@ -103,6 +112,13 @@ class AdminMemberControllerTest {
                 .param("password", "updated-password"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/admin/members"));
+
+        Member member = memberRepository.findByEmail("updated-admin@example.com").orElseThrow();
+        assertThat(member.getPassword()).isNotEqualTo("updated-password");
+        Member authenticated = memberService.authenticate(
+            new MemberRequest("updated-admin@example.com", "updated-password")
+        );
+        assertThat(authenticated.getEmail()).isEqualTo("updated-admin@example.com");
     }
 
     @Test

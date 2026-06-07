@@ -11,9 +11,11 @@ import java.util.List;
 public class AdminMemberService {
 
     private final MemberRepository memberRepository;
+    private final MemberPasswordEncoder memberPasswordEncoder;
 
-    public AdminMemberService(MemberRepository memberRepository) {
+    public AdminMemberService(MemberRepository memberRepository, MemberPasswordEncoder memberPasswordEncoder) {
         this.memberRepository = memberRepository;
+        this.memberPasswordEncoder = memberPasswordEncoder;
     }
 
     public List<Member> getMembers() {
@@ -31,13 +33,13 @@ public class AdminMemberService {
 
     @Transactional
     public void createMember(String email, String password) {
-        memberRepository.save(new Member(email, password));
+        memberRepository.save(new Member(email, memberPasswordEncoder.encode(password)));
     }
 
     @Transactional
     public void updateMember(Long id, String email, String password) {
         Member member = getMember(id);
-        member.update(email, password);
+        member.update(email, memberPasswordEncoder.encode(password));
         memberRepository.save(member);
     }
 

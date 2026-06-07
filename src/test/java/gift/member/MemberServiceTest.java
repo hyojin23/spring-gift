@@ -6,7 +6,6 @@ import gift.member.exception.PointDeductionTargetNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -20,8 +19,8 @@ import static org.mockito.Mockito.when;
 class MemberServiceTest {
 
     private final MemberRepository memberRepository = mock(MemberRepository.class);
-    private final PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
-    private final MemberService memberService = new MemberService(memberRepository, passwordEncoder);
+    private final MemberPasswordEncoder memberPasswordEncoder = mock(MemberPasswordEncoder.class);
+    private final MemberService memberService = new MemberService(memberRepository, memberPasswordEncoder);
 
     @Test
     @DisplayName("회원가입에 성공하면 회원을 저장하고 반환한다")
@@ -29,14 +28,14 @@ class MemberServiceTest {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         Member member = new Member(request.email(), "encoded-password");
         when(memberRepository.existsByEmail(request.email())).thenReturn(false);
-        when(passwordEncoder.encode(request.password())).thenReturn("encoded-password");
+        when(memberPasswordEncoder.encode(request.password())).thenReturn("encoded-password");
         when(memberRepository.saveAndFlush(any(Member.class))).thenReturn(member);
 
         Member result = memberService.register(request);
 
         assertThat(result.getEmail()).isEqualTo(request.email());
         assertThat(result.getPassword()).isEqualTo("encoded-password");
-        verify(passwordEncoder).encode(request.password());
+        verify(memberPasswordEncoder).encode(request.password());
     }
 
     @Test
@@ -54,7 +53,7 @@ class MemberServiceTest {
     void registerDuplicateEmailByDatabaseConstraint() {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         when(memberRepository.existsByEmail(request.email())).thenReturn(false);
-        when(passwordEncoder.encode(request.password())).thenReturn("encoded-password");
+        when(memberPasswordEncoder.encode(request.password())).thenReturn("encoded-password");
         when(memberRepository.saveAndFlush(any(Member.class)))
             .thenThrow(new DataIntegrityViolationException("duplicate email"));
 
@@ -68,12 +67,12 @@ class MemberServiceTest {
         MemberRequest request = new MemberRequest("member@example.com", "password");
         Member member = new Member(request.email(), "encoded-password");
         when(memberRepository.findByEmail(request.email())).thenReturn(Optional.of(member));
-        when(passwordEncoder.matches(request.password(), member.getPassword())).thenReturn(true);
+        when(memberPasswordEncoder.matches(request.password(), member.getPassword())).thenReturn(true);
 
         Member result = memberService.authenticate(request);
 
         assertThat(result).isEqualTo(member);
-        verify(passwordEncoder).matches(request.password(), member.getPassword());
+        verify(memberPasswordEncoder).matches(request.password(), member.getPassword());
     }
 
     @Test
@@ -92,7 +91,7 @@ class MemberServiceTest {
         MemberRequest request = new MemberRequest("member@example.com", "wrong-password");
         Member member = new Member(request.email(), "encoded-password");
         when(memberRepository.findByEmail(request.email())).thenReturn(Optional.of(member));
-        when(passwordEncoder.matches(request.password(), member.getPassword())).thenReturn(false);
+        when(memberPasswordEncoder.matches(request.password(), member.getPassword())).thenReturn(false);
 
         assertThatThrownBy(() -> memberService.authenticate(request))
             .isInstanceOf(InvalidMemberCredentialsException.class);

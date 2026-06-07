@@ -2,6 +2,7 @@ package gift.member;
 
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InvalidMemberCredentialsException;
+import gift.member.exception.PointDeductionTargetNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,7 @@ public class MemberService {
     @Transactional
     public Member deductPointForOrder(Long memberId, int amount) {
         Member member = memberRepository.findByIdForUpdate(memberId)
-            .orElseThrow(InvalidMemberCredentialsException::new);
+            .orElseThrow(PointDeductionTargetNotFoundException::new);
         member.deductPoint(amount);
         return member;
     }

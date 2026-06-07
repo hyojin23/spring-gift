@@ -2,6 +2,7 @@ package gift.member;
 
 import gift.member.exception.DuplicateMemberEmailException;
 import gift.member.exception.InvalidMemberCredentialsException;
+import gift.member.exception.PointDeductionTargetNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -108,5 +109,14 @@ class MemberServiceTest {
 
         assertThat(result.getPoint()).isEqualTo(8_000);
         verify(memberRepository).findByIdForUpdate(1L);
+    }
+
+    @Test
+    @DisplayName("포인트 차감 대상을 찾지 못하면 포인트 차감 대상 미존재 예외를 던진다")
+    void deductPointForOrderTargetNotFound() {
+        when(memberRepository.findByIdForUpdate(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> memberService.deductPointForOrder(1L, 2_000))
+            .isInstanceOf(PointDeductionTargetNotFoundException.class);
     }
 }

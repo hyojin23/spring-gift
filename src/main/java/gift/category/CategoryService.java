@@ -11,9 +11,11 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryDeletionPolicy categoryDeletionPolicy;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, CategoryDeletionPolicy categoryDeletionPolicy) {
         this.categoryRepository = categoryRepository;
+        this.categoryDeletionPolicy = categoryDeletionPolicy;
     }
 
     public List<CategoryResponse> getCategories() {
@@ -40,7 +42,9 @@ public class CategoryService {
 
     @Transactional
     public void deleteCategory(Long id) {
-        categoryRepository.deleteById(id);
+        Category category = findCategory(id);
+        categoryDeletionPolicy.validateDeletable(id);
+        categoryRepository.delete(category);
     }
 
     public Category findCategory(Long id) {

@@ -1,6 +1,7 @@
 package gift.global;
 
 import gift.category.exception.CategoryNotFoundException;
+import gift.category.exception.CategoryDeletionNotAllowedException;
 import gift.category.exception.CategoryValidationException;
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
@@ -40,6 +41,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CategoryValidationException.class)
     public ResponseEntity<ErrorResponse> handleCategoryValidation(CategoryValidationException exception) {
         return error(HttpStatus.BAD_REQUEST, "CATEGORY.INVALID", exception.getMessage());
+    }
+
+    @ExceptionHandler(CategoryDeletionNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryDeletionNotAllowed(
+        CategoryDeletionNotAllowedException exception
+    ) {
+        return error(HttpStatus.CONFLICT, "CATEGORY.DELETE_NOT_ALLOWED", exception.getMessage());
     }
 
     @ExceptionHandler(AuthenticationException.class)

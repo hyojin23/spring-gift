@@ -131,4 +131,22 @@ class CategoryControllerTest {
         mockMvc.perform(delete(location))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    @DisplayName("존재하지 않는 카테고리를 삭제하면 404 에러 응답을 반환한다")
+    void deleteCategoryNotFound() throws Exception {
+        mockMvc.perform(delete("/api/categories/999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("CATEGORY.NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("카테고리를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("상품이 있는 카테고리를 삭제하면 409 에러 응답을 반환한다")
+    void deleteCategoryWithProducts() throws Exception {
+        mockMvc.perform(delete("/api/categories/1"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("CATEGORY.DELETE_NOT_ALLOWED"))
+                .andExpect(jsonPath("$.message").value("상품이 있는 카테고리는 삭제할 수 없습니다."));
+    }
 }

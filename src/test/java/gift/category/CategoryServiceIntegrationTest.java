@@ -1,6 +1,7 @@
 package gift.category;
 
 import gift.category.exception.CategoryNotFoundException;
+import gift.category.exception.CategoryDeletionNotAllowedException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,20 @@ class CategoryServiceIntegrationTest {
         flushAndClear();
 
         assertThat(categoryRepository.existsById(saved.getId())).isFalse();
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 카테고리를 삭제하면 카테고리 미존재 예외가 발생한다")
+    void deleteCategoryNotFound() {
+        assertThatThrownBy(() -> categoryService.deleteCategory(999999L))
+            .isInstanceOf(CategoryNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("상품이 있는 카테고리를 삭제하면 카테고리 삭제 불가 예외가 발생한다")
+    void deleteCategoryWithProducts() {
+        assertThatThrownBy(() -> categoryService.deleteCategory(1L))
+            .isInstanceOf(CategoryDeletionNotAllowedException.class);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package gift.global;
 
 import gift.category.exception.CategoryNotFoundException;
+import gift.category.exception.CategoryDeletionNotAllowedException;
 import gift.category.exception.CategoryValidationException;
 import gift.global.exception.ErrorResponse;
 import gift.member.exception.DuplicateMemberEmailException;
@@ -58,6 +59,19 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("CATEGORY.INVALID");
         assertThat(response.getBody().message()).isEqualTo("카테고리 이름은 필수입니다.");
+    }
+
+    @Test
+    @DisplayName("카테고리 삭제 불가 예외를 409 에러 응답으로 변환한다")
+    void handleCategoryDeletionNotAllowed() {
+        ResponseEntity<ErrorResponse> response = handler.handleCategoryDeletionNotAllowed(
+            new CategoryDeletionNotAllowedException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("CATEGORY.DELETE_NOT_ALLOWED");
+        assertThat(response.getBody().message()).isEqualTo("상품이 있는 카테고리는 삭제할 수 없습니다.");
     }
 
     @Test

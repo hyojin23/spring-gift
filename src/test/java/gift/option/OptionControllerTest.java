@@ -93,6 +93,16 @@ class OptionControllerTest {
     }
 
     @Test
+    @DisplayName("주문 이력이 있는 옵션을 삭제하면 409 에러 응답을 반환한다")
+    void deleteOrderedOption() throws Exception {
+        mockMvc.perform(delete("/api/products/2/options/3"))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("OPTION.ORDERED_DELETE_NOT_ALLOWED"))
+            .andExpect(jsonPath("$.message").value("주문 이력이 있는 옵션은 삭제할 수 없습니다."))
+            .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
     @DisplayName("옵션명 검증에 실패하면 400 에러 응답을 반환한다")
     void createOptionInvalidName() throws Exception {
         String request = """

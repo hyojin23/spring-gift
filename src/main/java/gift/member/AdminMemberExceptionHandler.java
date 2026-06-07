@@ -16,4 +16,10 @@ public class AdminMemberExceptionHandler {
         redirectAttributes.addFlashAttribute("error", exception.getMessage());
         return "redirect:/admin/members";
     }
+
+    @ExceptionHandler(Exception.class)
+    public String handleUnexpected(Exception exception, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", "요청을 처리할 수 없습니다.");
+        return "redirect:/admin/members";
+    }
 }

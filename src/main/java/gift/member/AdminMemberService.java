@@ -12,10 +12,16 @@ public class AdminMemberService {
 
     private final MemberRepository memberRepository;
     private final MemberPasswordEncoder memberPasswordEncoder;
+    private final MemberDeletionPolicy memberDeletionPolicy;
 
-    public AdminMemberService(MemberRepository memberRepository, MemberPasswordEncoder memberPasswordEncoder) {
+    public AdminMemberService(
+        MemberRepository memberRepository,
+        MemberPasswordEncoder memberPasswordEncoder,
+        MemberDeletionPolicy memberDeletionPolicy
+    ) {
         this.memberRepository = memberRepository;
         this.memberPasswordEncoder = memberPasswordEncoder;
+        this.memberDeletionPolicy = memberDeletionPolicy;
     }
 
     public List<Member> getMembers() {
@@ -52,6 +58,8 @@ public class AdminMemberService {
 
     @Transactional
     public void deleteMember(Long id) {
-        memberRepository.deleteById(id);
+        Member member = getMember(id);
+        memberDeletionPolicy.validateDeletable(id);
+        memberRepository.delete(member);
     }
 }

@@ -2,7 +2,9 @@ package gift.product;
 
 import gift.category.Category;
 import gift.category.CategoryRepository;
+import gift.option.OptionRepository;
 import gift.product.exception.ProductCategoryNotFoundException;
+import gift.product.exception.ProductDeletionNotAllowedException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +15,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,9 +23,11 @@ class ProductServiceTest {
 
     private final ProductRepository productRepository = mock(ProductRepository.class);
     private final CategoryRepository categoryRepository = mock(CategoryRepository.class);
+    private final OptionRepository optionRepository = mock(OptionRepository.class);
     private final ProductUseCaseService productUseCaseService = new ProductUseCaseService(
         productRepository,
-        categoryRepository
+        categoryRepository,
+        optionRepository
     );
     private final ProductService productService = new ProductService(
         productRepository,
@@ -85,10 +90,23 @@ class ProductServiceTest {
     void deleteProduct() {
         Product product = new Product("상품", 1000, "https://example.com/product.jpg", category(1L));
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(optionRepository.countByProductId(1L)).thenReturn(0L);
 
         productService.deleteProduct(1L);
 
         verify(productRepository).delete(product);
+    }
+
+    @Test
+    @DisplayName("옵션이 있는 상품을 삭제하면 상품 삭제 불가 예외를 던진다")
+    void deleteProductWithOptions() {
+        Product product = new Product("상품", 1000, "https://example.com/product.jpg", category(1L));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(optionRepository.countByProductId(1L)).thenReturn(1L);
+
+        assertThatThrownBy(() -> productService.deleteProduct(1L))
+            .isInstanceOf(ProductDeletionNotAllowedException.class);
+        verify(productRepository, never()).delete(product);
     }
 
     private Category category(Long id) {

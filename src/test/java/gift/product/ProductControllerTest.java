@@ -1,5 +1,7 @@
 package gift.product;
 
+import gift.category.Category;
+import gift.category.CategoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,12 @@ class ProductControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Test
     @DisplayName("상품 목록을 조회한다")
@@ -179,8 +187,23 @@ class ProductControllerTest {
     @Test
     @DisplayName("상품을 삭제한다")
     void deleteProduct() throws Exception {
-        mockMvc.perform(delete("/api/products/4"))
+        Category category = categoryRepository.findById(1L).orElseThrow();
+        Product product = productRepository.save(
+            new Product("delete", 1000, "https://example.com/delete.jpg", category)
+        );
+
+        mockMvc.perform(delete("/api/products/" + product.getId()))
             .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("옵션이 있는 상품을 삭제하면 409 에러 응답을 반환한다")
+    void deleteProductWithOptions() throws Exception {
+        mockMvc.perform(delete("/api/products/4"))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("PRODUCT.DELETE_NOT_ALLOWED"))
+            .andExpect(jsonPath("$.message").value("옵션이 있는 상품은 삭제할 수 없습니다."))
+            .andExpect(jsonPath("$.timestamp").exists());
     }
 
     @Test

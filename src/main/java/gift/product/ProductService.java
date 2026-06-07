@@ -1,6 +1,7 @@
 package gift.product;
 
 import gift.product.exception.ProductCategoryNotFoundException;
+import gift.product.exception.ProductDeletionNotAllowedException;
 import gift.product.exception.ProductNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,8 +54,11 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long id) {
-        Product product = findProduct(id);
-        productRepository.delete(product);
+        productUseCaseService.deleteProduct(
+            id,
+            ProductNotFoundException::new,
+            ProductDeletionNotAllowedException::new
+        );
     }
 
     private Product findProduct(Long id) {

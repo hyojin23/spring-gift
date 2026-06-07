@@ -15,6 +15,7 @@ import gift.option.exception.OptionValidationException;
 import gift.order.exception.OrderErrorCode;
 import gift.order.exception.OrderException;
 import gift.product.exception.ProductCategoryNotFoundException;
+import gift.product.exception.ProductDeletionNotAllowedException;
 import gift.product.exception.ProductNotFoundException;
 import gift.product.exception.ProductValidationException;
 import gift.auth.exception.AuthenticationException;
@@ -282,5 +283,18 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("PRODUCT.INVALID_NAME");
         assertThat(response.getBody().message()).isEqualTo("상품 이름은 필수입니다.");
+    }
+
+    @Test
+    @DisplayName("상품 삭제 불가 예외를 409 에러 응답으로 변환한다")
+    void handleProductDeletionNotAllowed() {
+        ResponseEntity<ErrorResponse> response = handler.handleProductDeletionNotAllowed(
+            new ProductDeletionNotAllowedException()
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().code()).isEqualTo("PRODUCT.DELETE_NOT_ALLOWED");
+        assertThat(response.getBody().message()).isEqualTo("옵션이 있는 상품은 삭제할 수 없습니다.");
     }
 }

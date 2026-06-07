@@ -3,6 +3,7 @@ package gift.product;
 import gift.category.Category;
 import gift.category.CategoryRepository;
 import gift.product.exception.AdminProductCategoryNotFoundException;
+import gift.product.exception.AdminProductDeletionNotAllowedException;
 import gift.product.exception.AdminProductNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,7 +65,11 @@ public class AdminProductService {
 
     @Transactional
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        productUseCaseService.deleteProduct(
+            id,
+            () -> new AdminProductNotFoundException(id),
+            () -> new AdminProductDeletionNotAllowedException(id)
+        );
     }
 
 }

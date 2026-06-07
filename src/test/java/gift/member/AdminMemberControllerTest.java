@@ -170,4 +170,13 @@ class AdminMemberControllerTest {
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/admin/members"));
     }
+
+    @Test
+    @DisplayName("주문 이력이 있는 회원을 삭제하면 오류 메시지와 함께 회원 목록으로 redirect한다")
+    void deleteMemberWithOrders() throws Exception {
+        mockMvc.perform(post("/admin/members/{id}/delete", 2L))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/admin/members"))
+            .andExpect(flash().attribute("error", "주문 이력이 있는 회원은 삭제할 수 없습니다. id=2"));
+    }
 }
